@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Route</title>
+</head>
+<body>
+    <h1>Testing Server Routes</h1>
+    
+    <button onclick="testRoute()">Test /api/test</button>
+    <button onclick="testAdminRoute()">Test /api/test-admin-route</button>
+    <button onclick="testCreateAdmin()">Test /api/admin/create-admin</button>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+    
+    <script>
+        async function testRoute() {
+            try {
+                const res = await fetch('http://localhost:3000/api/test');
+                const data = await res.json();
+                document.getElementById('result').innerHTML = `<pre>✅ /api/test: ${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('result').innerHTML = `<pre>❌ /api/test Error: ${e.message}</pre>`;
+            }
+        }
+        
+        async function testAdminRoute() {
+            try {
+                const res = await fetch('http://localhost:3000/api/test-admin-route');
+                const data = await res.json();
+                document.getElementById('result').innerHTML = `<pre>✅ /api/test-admin-route: ${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('result').innerHTML = `<pre>❌ /api/test-admin-route Error: ${e.message}</pre>`;
+            }
+        }
+        
+        async function testCreateAdmin() {
+            try {
+                const res = await fetch('http://localhost:3000/api/admin/create-admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: 'test@test.com', password: 'test123' })
+                });
+                
+                const contentType = res.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await res.text();
+                    document.getElementById('result').innerHTML = `<pre>❌ Got HTML instead of JSON:\n${text.substring(0, 500)}</pre>`;
+                    return;
+                }
+                
+                const data = await res.json();
+                document.getElementById('result').innerHTML = `<pre>✅ /api/admin/create-admin: ${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('result').innerHTML = `<pre>❌ /api/admin/create-admin Error: ${e.message}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+
+

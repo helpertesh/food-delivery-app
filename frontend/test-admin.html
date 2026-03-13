@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Admin Access</title>
+</head>
+<body>
+    <h1>Admin Setup Helper</h1>
+    <p>Use this page to create an admin account.</p>
+    
+    <h2>Create Admin Account</h2>
+    <form id="adminForm">
+        <label>Email:</label><br>
+        <input type="email" id="email" value="admin@fooddelivery.com" required><br><br>
+        
+        <label>Password:</label><br>
+        <input type="password" id="password" value="admin123" required><br><br>
+        
+        <button type="submit">Create Admin</button>
+    </form>
+    
+    <div id="result" style="margin-top: 20px;"></div>
+    
+    <hr>
+    <h2>After creating admin:</h2>
+    <ol>
+        <li>Go to: <a href="login.html">Login Page</a></li>
+        <li>Login with the email and password you just created</li>
+        <li>You should see "👑 Admin" link in dashboard</li>
+        <li>Click it or go to: <a href="admin.html">admin.html</a></li>
+    </ol>
+    
+    <script>
+        document.getElementById('adminForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Creating admin...';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/admin/create-admin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    resultDiv.innerHTML = `<div style="color: red;">❌ Server returned HTML instead of JSON. Response: ${text.substring(0, 200)}<br><br>Make sure:<br>1. Server is running (node server.js)<br>2. The endpoint exists</div>`;
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div style="color: green; padding: 10px; background: #e8f5e8; border-radius: 5px;">
+                            ✅ ${data.message}<br>
+                            Email: ${email}<br>
+                            Password: ${password}<br><br>
+                            <a href="login.html" style="background: #667eea; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go to Login</a>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div style="color: red;">❌ ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div style="color: red;">❌ Error: ${error.message}<br><br>Make sure:<br>1. Server is running (cd backend && node server.js)<br>2. Server is on port 3000<br>3. Check browser console (F12) for more details</div>`;
+                console.error('Full error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
+

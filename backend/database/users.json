@@ -1,0 +1,58 @@
+{
+  "users": [
+    {
+      "id": "1772877778368",
+      "name": "peter",
+      "email": "mutethiaip25@gmail.com",
+      "password": "$2b$10$gGoGNxRPbVF4uirIg/gKyOLCYEAEjcpx7Wk7UXxg0pCgrq1ShDzFO",
+      "phone": "0712919229",
+      "address": "Meru 60100\nNairobi",
+      "createdAt": "2026-03-07T10:02:58.368Z"
+    },
+    {
+      "id": "1772884393428",
+      "name": "PETER HELPER",
+      "email": "mutethiap25@gmail.com",
+      "password": "$2b$10$oLAn2NAdkT/n3r6.J3dptubE0Pp3QqSJC.8awBl9yqZuWsdF7cEfO",
+      "phone": "0712919229",
+      "address": "Meru   60100\nNairobi",
+      "createdAt": "2026-03-07T11:53:13.428Z"
+    },
+    {
+      "id": "1772884764545",
+      "name": "collins onyango",
+      "email": "collins@gmail.com",
+      "password": "$2b$10$1mPCiAEHv5TDWdkPxApjMeTbJjQei5AlK7KmqzZcdazJkxYKkOHPS",
+      "phone": "0712345678",
+      "address": "Apartment 12B, Ngong Road\nNairobi",
+      "createdAt": "2026-03-07T11:59:24.546Z"
+    },
+    {
+      "id": "1772914796791",
+      "name": "abed",
+      "email": "abed25@gmail.com",
+      "password": "$2b$10$0CNMeSal4UhUVgR46bRO0eRj3QE7wK7UnUJl.WHC8beS2/LRdY9Dq",
+      "phone": "0712919229",
+      "address": "Meru   60100\nNairobi",
+      "createdAt": "2026-03-07T20:19:56.791Z"
+    },
+    {
+      "id": "1772915796397",
+      "name": "harmony",
+      "email": "harmony@gmail.com",
+      "password": "$2b$10$4OYfkI067WWiRT.bmEsFNOIlgOE9kgq5ILYdPP5Gh.zEhfW7kgR.y",
+      "phone": "0713028200",
+      "address": "Apartment 12B, Ngong Road\nNairobi",
+      "createdAt": "2026-03-07T20:36:36.397Z"
+    },
+    {
+      "id": "1772916888858",
+      "name": "john",
+      "email": "john123@gmail.com",
+      "password": "$2b$10$6OQ7e78UIzb.C638PkC3PeecS5fu5Rn4kvdJyPzBE2zjClVkUA5/2",
+      "phone": "0705128345",
+      "address": "Meru   60100\nNairobi",
+      "createdAt": "2026-03-07T20:54:48.858Z"
+    }
+  ]
+}

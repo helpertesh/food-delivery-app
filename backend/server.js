@@ -1,14 +1,19 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const path = require('path');
 const fs = require('fs');
+const mpesaDaraja = require('./services/mpesaDaraja');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const db = require('./config/database');
 
 const app = express();
 const PORT = 3000;
+
+/** @type {Map<string, { status: string, resultCode?: number, resultDesc?: string, amount?: number, mpesaReceipt?: string, phone254?: string, createdAt: number, simulated?: boolean }>} */
+const mpesaTransactionState = new Map();
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -410,86 +415,157 @@ app.get('/api/orders/user/:userId', async (req, res) => {
     }
 });
 
-// ==================== M-PESA PAYMENT ENDPOINTS ====================
+// ==================== M-PESA PAYMENT ENDPOINTS (Safaricom Daraja STK Push) ====================
 
-// Initiate M-Pesa STK Push (Lipa na M-Pesa Online)
+// M-Pesa sends the STK result to CallBackURL — must be HTTPS and publicly reachable (e.g. ngrok).
+app.post('/api/payment/mpesa/callback', (req, res) => {
+    try {
+        const parsed = mpesaDaraja.parseStkCallback(req.body);
+        if (parsed?.checkoutRequestId) {
+            const ok = Number(parsed.resultCode) === 0;
+            mpesaTransactionState.set(parsed.checkoutRequestId, {
+                status: ok ? 'completed' : 'failed',
+                resultCode: parsed.resultCode,
+                resultDesc: parsed.resultDesc,
+                amount: parsed.amount,
+                mpesaReceipt: parsed.mpesaReceipt,
+                createdAt: Date.now(),
+            });
+            console.log(
+                ok ? '✅ M-Pesa STK completed:' : '⚠️ M-Pesa STK failed:',
+                parsed.checkoutRequestId,
+                parsed.resultDesc
+            );
+        } else {
+            console.log('📩 M-Pesa callback (unparsed):', JSON.stringify(req.body).slice(0, 500));
+        }
+        res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+    } catch (e) {
+        console.error('❌ M-Pesa callback error:', e);
+        res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+    }
+});
+
 app.post('/api/payment/mpesa/stk-push', async (req, res) => {
     try {
-        const { phoneNumber, amount } = req.body;
-        
-        if (!phoneNumber || !amount) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Phone number and amount are required' 
+        const { phoneNumber, amount, accountReference, transactionDesc } = req.body;
+
+        if (!phoneNumber || amount == null) {
+            return res.status(400).json({
+                success: false,
+                message: 'Phone number and amount are required',
             });
         }
 
-        // Format phone number (ensure it starts with 254 for Kenya)
-        let formattedPhone = phoneNumber.replace(/\D/g, ''); // Remove non-digits
-        if (formattedPhone.startsWith('0')) {
-            formattedPhone = '254' + formattedPhone.substring(1);
-        } else if (!formattedPhone.startsWith('254')) {
-            formattedPhone = '254' + formattedPhone;
+        const formattedPhone = mpesaDaraja.formatPhone254(phoneNumber);
+        const amountNum = Math.max(1, Math.round(Number(amount)));
+
+        console.log('📱 STK Push request:', formattedPhone, 'KSh', amountNum);
+
+        if (mpesaDaraja.useSimulation() || !mpesaDaraja.isConfigured()) {
+            if (!mpesaDaraja.useSimulation() && !mpesaDaraja.isConfigured()) {
+                return res.status(503).json({
+                    success: false,
+                    code: 'MPESA_NOT_CONFIGURED',
+                    message:
+                        'M-Pesa Daraja is not configured. Add MPESA_* variables to backend/.env (see .env.example) or set MPESA_USE_SIMULATION=true for local testing.',
+                });
+            }
+
+            await new Promise((r) => setTimeout(r, 1500));
+            const checkoutRequestId = 'SIM_' + Date.now();
+            mpesaTransactionState.set(checkoutRequestId, {
+                status: 'pending',
+                phone254: formattedPhone,
+                createdAt: Date.now(),
+                simulated: true,
+            });
+            console.log('✅ (simulation) STK Push fake ID:', checkoutRequestId);
+            return res.json({
+                success: true,
+                mode: 'simulation',
+                message:
+                    'Simulated STK Push. No real charge. Status will succeed after a few seconds for testing.',
+                checkoutRequestId,
+                phoneNumber: formattedPhone,
+                amount: amountNum,
+            });
         }
 
-        console.log('📱 Initiating M-Pesa STK Push...');
-        console.log(`   Phone: ${formattedPhone}`);
-        console.log(`   Amount: KSh ${amount}`);
-
-        // TODO: Replace this with actual M-Pesa Daraja API integration
-        // For now, this simulates the STK Push process
-        // Real implementation would use:
-        // - M-Pesa Consumer Key and Secret
-        // - Access Token generation
-        // - STK Push API call to M-Pesa
-        // - Callback URL for payment confirmation
-
-        // Simulate STK Push delay (2-3 seconds)
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // In a real implementation, M-Pesa would send the STK Push to the user's phone
-        // and we would wait for the callback to confirm payment
-        // For simulation, we return success immediately
-        
-        console.log('✅ M-Pesa STK Push sent to phone');
-        
-        res.json({ 
-            success: true, 
-            message: 'Payment request sent to your phone. Please check your phone and enter your M-Pesa PIN.',
-            checkoutRequestId: 'SIM_' + Date.now(), // Simulated checkout request ID
-            phoneNumber: formattedPhone,
-            amount: amount
+        const stk = await mpesaDaraja.initiateStkPush({
+            phoneNumber,
+            amount: amountNum,
+            accountReference: accountReference || 'FoodDelivery',
+            transactionDesc: transactionDesc || 'Food order',
         });
 
+        mpesaTransactionState.set(stk.checkoutRequestId, {
+            status: 'pending',
+            phone254: stk.phone254,
+            createdAt: Date.now(),
+        });
+
+        res.json({
+            success: true,
+            mode: 'daraja',
+            message:
+                stk.customerMessage ||
+                'Payment request sent to your phone. Enter your M-Pesa PIN when prompted.',
+            checkoutRequestId: stk.checkoutRequestId,
+            merchantRequestId: stk.merchantRequestId,
+            phoneNumber: stk.phone254,
+            amount: stk.amount,
+        });
     } catch (error) {
         console.error('❌ Error initiating M-Pesa payment:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Error initiating payment: ' + error.message 
+        res.status(500).json({
+            success: false,
+            message: 'Error initiating payment: ' + error.message,
         });
     }
 });
 
-// Check payment status (for polling)
-app.get('/api/payment/mpesa/status/:checkoutRequestId', async (req, res) => {
+app.get('/api/payment/mpesa/status/:checkoutRequestId', (req, res) => {
     try {
         const { checkoutRequestId } = req.params;
-        
-        // TODO: In real implementation, check M-Pesa callback or query payment status
-        // For simulation, return pending status
-        // In production, this would query M-Pesa API or check database for callback result
-        
-        res.json({ 
-            success: true, 
-            status: 'pending', // pending, completed, failed
-            message: 'Payment is being processed. Please complete the transaction on your phone.'
-        });
+        const row = mpesaTransactionState.get(checkoutRequestId);
 
+        if (!row) {
+            return res.json({
+                success: true,
+                status: 'unknown',
+                message: 'No transaction found. It may have expired — try initiating payment again.',
+            });
+        }
+
+        if (row.simulated && row.status === 'pending') {
+            if (Date.now() - row.createdAt > 5000) {
+                row.status = 'completed';
+                row.resultDesc = 'Simulated success';
+                mpesaTransactionState.set(checkoutRequestId, row);
+            }
+        }
+
+        const status = row.status;
+        const messages = {
+            pending: 'Waiting for you to complete payment on your phone…',
+            completed: 'Payment received.',
+            failed: row.resultDesc || 'Payment was not completed.',
+            unknown: 'Unknown state.',
+        };
+
+        res.json({
+            success: true,
+            status,
+            message: messages[status] || messages.unknown,
+            mpesaReceipt: row.mpesaReceipt,
+            resultCode: row.resultCode,
+        });
     } catch (error) {
         console.error('❌ Error checking payment status:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Error checking payment status: ' + error.message 
+        res.status(500).json({
+            success: false,
+            message: 'Error checking payment status: ' + error.message,
         });
     }
 });
@@ -977,4 +1053,13 @@ app.listen(PORT, () => {
     console.log(`Open http://localhost:3000 to access the app`);
     console.log('✅ Database: MySQL connected');
     console.log('📋 Admin endpoint: POST /api/admin/create-admin');
+    if (mpesaDaraja.useSimulation()) {
+        console.log('💳 M-Pesa: simulation mode (MPESA_USE_SIMULATION=true)');
+    } else if (mpesaDaraja.isConfigured()) {
+        console.log('💳 M-Pesa: Daraja STK push enabled');
+    } else {
+        console.log(
+            '💳 M-Pesa: not configured — add backend/.env (see .env.example) or MPESA_USE_SIMULATION=true'
+        );
+    }
 });

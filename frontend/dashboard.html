@@ -588,6 +588,39 @@
             transform: scale(0.95);
         }
 
+        .mpesa-phone-row {
+            margin-bottom: 1rem;
+        }
+
+        .mpesa-phone-row label {
+            display: block;
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 0.35rem;
+            font-weight: 600;
+        }
+
+        .mpesa-phone-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .mpesa-phone-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .payment-till-note {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.75rem;
+            line-height: 1.5;
+        }
+
         .mpesa-prompt {
             text-align: center;
             padding: 2rem;
@@ -832,8 +865,7 @@
 
         <!-- Category Navigation -->
         <div class="category-nav" id="categoryNav">
-            <button class="category-btn active" onclick="filterByCategory('all')">All</button>
-            <!-- Categories will be loaded here -->
+            <!-- Categories (including "All") are inserted by setupCategories() after menu loads -->
         </div>
 
         <!-- Menu Section -->
@@ -882,11 +914,18 @@
             </div>
 
             <div class="payment-info">
-                <div class="payment-info-label">Send payment to:</div>
-                <div class="payment-number" id="paymentNumber" onclick="copyPaymentNumber()" title="Click to copy">
-                    0712919229
+                <div class="payment-info-label">M-Pesa (Safaricom STK push)</div>
+                <p style="font-size: 0.9rem; color: #555; margin-bottom: 1rem;">
+                    Enter the number that receives M-Pesa prompts. You will get a <strong>Lipa na M-Pesa</strong> popup — enter your PIN to pay.
+                </p>
+                <div class="mpesa-phone-row">
+                    <label for="mpesaPhone">Phone number</label>
+                    <input type="tel" class="mpesa-phone-input" id="mpesaPhone" placeholder="07XX XXX XXX or 2547..." autocomplete="tel">
                 </div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">Click number to copy</div>
+                <div class="payment-status waiting" id="mpesaPaymentStatus" style="display: none;"></div>
+                <p class="payment-till-note">
+                    Manual pay still available: send to <strong>0712919229</strong> if STK is unavailable — use Pay with M-Pesa after paying so we can record your order.
+                </p>
             </div>
 
             <div class="order-summary" id="orderSummary">
@@ -894,28 +933,31 @@
             </div>
 
             <div class="payment-instructions">
-                <h3>📱 Payment Instructions:</h3>
+                <h3>📱 How STK push works</h3>
                 <ol>
-                    <li>Open your mobile money app (M-Pesa, Airtel Money, etc.)</li>
-                    <li>Send the total amount to: <strong>0712919229</strong></li>
-                    <li>Wait for payment confirmation</li>
-                    <li>Click "Confirm Payment" below to complete your order</li>
+                    <li>Tap <strong>Pay with M-Pesa</strong> — Safaricom Daraja sends a payment request to your phone.</li>
+                    <li>When the prompt appears, confirm the amount and enter your M-Pesa PIN.</li>
+                    <li>When payment succeeds, your order is placed automatically.</li>
                 </ol>
             </div>
 
             <div class="payment-actions">
                 <button class="payment-btn cancel" onclick="closePaymentModal()">Cancel</button>
-                <button class="payment-btn confirm" id="confirmPaymentBtn" type="button">Confirm Payment</button>
+                <button class="payment-btn confirm" id="confirmPaymentBtn" type="button">Pay with M-Pesa</button>
             </div>
         </div>
     </div>
 
     <script>
         // State management
+        const API_BASE = 'http://localhost:3000';
         let menuItems = [];
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
         let currentCategory = 'all';
         let userData = null;
+        let mpesaPollTimer = null;
+        let paymentTotalKes = 0;
+        let mpesaPollDeadline = 0;
 
         // Check authentication
         function checkAuth() {
@@ -975,7 +1017,7 @@
                 document.getElementById('loading').style.display = 'block';
                 document.getElementById('menuGrid').innerHTML = '';
                 
-                const response = await fetch('http://localhost:3000/api/menu-items');
+                const response = await fetch(`${API_BASE}/api/menu-items`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -993,8 +1035,12 @@
 
         // Setup category buttons from actual data
         function setupCategories() {
-            const categories = ['all', ...new Set(menuItems.map(item => item.category))];
+            const fromItems = [...new Set(menuItems.map(item => item.category))].filter(
+                c => String(c).toLowerCase() !== 'all'
+            );
+            const categories = ['all', ...fromItems];
             const nav = document.getElementById('categoryNav');
+            nav.innerHTML = '';
             
             categories.forEach(category => {
                 const btn = document.createElement('button');
@@ -1192,81 +1238,87 @@
                 </div>
             `;
 
+            paymentTotalKes = Math.max(1, Math.round(total));
+
             // Reset payment modal state
             resetPaymentModal();
+
+            const phoneEl = document.getElementById('mpesaPhone');
+            if (phoneEl && userData?.phone) {
+                phoneEl.value = String(userData.phone).replace(/\s/g, '');
+            }
 
             // Show payment modal
             document.getElementById('paymentModal').classList.add('show');
         }
 
+        function stopMpesaPolling() {
+            if (mpesaPollTimer) {
+                clearInterval(mpesaPollTimer);
+                mpesaPollTimer = null;
+            }
+        }
+
+        function setMpesaStatus(visible, className, text) {
+            const el = document.getElementById('mpesaPaymentStatus');
+            if (!el) return;
+            el.style.display = visible ? 'block' : 'none';
+            el.className = 'payment-status' + (className ? ' ' + className : '');
+            el.textContent = text || '';
+        }
+
         // Reset payment modal to initial state
         function resetPaymentModal() {
-            // Reset any button states if needed
+            stopMpesaPolling();
+            setMpesaStatus(false, '', '');
             const confirmBtn = document.getElementById('confirmPaymentBtn');
             if (confirmBtn) {
                 confirmBtn.disabled = false;
-                confirmBtn.textContent = 'Confirm Payment';
+                confirmBtn.textContent = 'Pay with M-Pesa';
             }
         }
 
         // Close payment modal
         function closePaymentModal() {
+            stopMpesaPolling();
             document.getElementById('paymentModal').classList.remove('show');
-            // Reset modal state after closing
             setTimeout(() => {
                 resetPaymentModal();
             }, 300);
         }
 
-        // Copy payment number to clipboard
-        function copyPaymentNumber() {
-            const paymentNumber = '0712919229';
-            
-            // Try to copy to clipboard
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(paymentNumber).then(() => {
-                    showToast('Payment number copied to clipboard! 📋', 'success');
-                    
-                    // Visual feedback
-                    const numberEl = document.getElementById('paymentNumber');
-                    const originalText = numberEl.textContent;
-                    numberEl.textContent = 'Copied! ✓';
-                    numberEl.style.background = 'rgba(76, 175, 80, 0.3)';
-                    
-                    setTimeout(() => {
-                        numberEl.textContent = originalText;
-                        numberEl.style.background = 'rgba(255, 255, 255, 0.2)';
-                    }, 2000);
-                }).catch(() => {
-                    // Fallback if clipboard API fails
-                    fallbackCopy(paymentNumber);
-                });
-            } else {
-                // Fallback for older browsers
-                fallbackCopy(paymentNumber);
+        async function placeOrderAfterPayment(paymentMethodLabel) {
+            const response = await fetch(`${API_BASE}/api/orders`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: userData.id,
+                    items: cart,
+                    deliveryAddress: userData.address,
+                    paymentMethod: paymentMethodLabel,
+                }),
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(data.message || 'Could not place order');
             }
+            if (!data.success) {
+                throw new Error(data.message || 'Order failed');
+            }
+            return data;
         }
 
-        // Fallback copy method
-        function fallbackCopy(text) {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.opacity = '0';
-            document.body.appendChild(textArea);
-            textArea.select();
-            
-            try {
-                document.execCommand('copy');
-                showToast('Payment number copied to clipboard! 📋', 'success');
-            } catch (err) {
-                showToast('Please manually copy: 0712919229', 'error');
+        async function pollMpesaStatus(checkoutRequestId) {
+            const res = await fetch(`${API_BASE}/api/payment/mpesa/status/${encodeURIComponent(checkoutRequestId)}`);
+            const data = await res.json();
+            if (!data.success) {
+                throw new Error(data.message || 'Status check failed');
             }
-            
-            document.body.removeChild(textArea);
+            return data;
         }
 
-        // Confirm payment and place order
+        // STK push via Daraja, then place order when payment completes
         async function confirmPayment() {
             if (cart.length === 0) {
                 showToast('Your cart is empty!', 'error');
@@ -1274,71 +1326,114 @@
                 return;
             }
 
+            const phoneEl = document.getElementById('mpesaPhone');
+            const phoneNumber = phoneEl ? phoneEl.value.trim() : '';
+            if (!phoneNumber) {
+                showToast('Enter the M-Pesa phone number', 'error');
+                return;
+            }
+
+            const confirmBtn = document.getElementById('confirmPaymentBtn');
+            stopMpesaPolling();
+            setMpesaStatus(true, 'waiting', 'Contacting M-Pesa…');
+
             try {
-                console.log('🛒 Confirming payment and placing order...', { userId: userData.id, items: cart });
-                
-                // Update UI to show processing
-                const confirmBtn = document.getElementById('confirmPaymentBtn');
                 confirmBtn.disabled = true;
-                confirmBtn.textContent = 'Processing...';
-                
-                // Show loading toast
-                showToast('Placing your order...', 'success');
-                
-                const response = await fetch('http://localhost:3000/api/orders', {
+                confirmBtn.textContent = 'Sending prompt…';
+
+                const stkRes = await fetch(`${API_BASE}/api/payment/mpesa/stk-push`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        userId: userData.id,
-                        items: cart,
-                        deliveryAddress: userData.address,
-                        paymentMethod: 'Mobile Money (0712919229)'
-                    })
+                        phoneNumber,
+                        amount: paymentTotalKes,
+                        accountReference: `FD${userData.id}-${Date.now()}`,
+                        transactionDesc: 'Food delivery',
+                    }),
                 });
 
-                console.log('📡 Response status:', response.status);
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('❌ Server error:', errorData);
+                const stkData = await stkRes.json().catch(() => ({}));
+
+                if (stkRes.status === 503 && stkData.code === 'MPESA_NOT_CONFIGURED') {
                     confirmBtn.disabled = false;
-                    confirmBtn.textContent = 'Confirm Payment';
-                    showToast(errorData.message || 'Error placing order', 'error');
+                    confirmBtn.textContent = 'Pay with M-Pesa';
+                    setMpesaStatus(true, 'error', stkData.message || 'M-Pesa not configured on server.');
+                    showToast('Add Daraja credentials to backend/.env or set MPESA_USE_SIMULATION=true', 'error');
                     return;
                 }
 
-                const data = await response.json();
-                console.log('✅ Order response:', data);
-                
-                if (data.success) {
-                    showToast('Order placed successfully! 🎉', 'success');
-                    
-                    // Clear cart
-                    cart = [];
-                    localStorage.removeItem('cart');
-                    updateCartDisplay();
-                    
-                    // Close modals
-                    closePaymentModal();
-                    toggleCart();
-                    
-                    // Show order summary
-                    setTimeout(() => {
-                        alert(`Order #${data.orderId} placed successfully!\nTotal: KSh ${data.totalAmount}\nPayment: Mobile Money (0712919229)\n\nThank you for ordering!`);
-                    }, 500);
-                } else {
+                if (!stkRes.ok || !stkData.success) {
                     confirmBtn.disabled = false;
-                    confirmBtn.textContent = 'Confirm Payment';
-                    showToast(data.message || 'Error placing order', 'error');
+                    confirmBtn.textContent = 'Pay with M-Pesa';
+                    setMpesaStatus(true, 'error', stkData.message || 'Could not start M-Pesa payment.');
+                    showToast(stkData.message || 'Payment failed to start', 'error');
+                    return;
                 }
+
+                const checkoutRequestId = stkData.checkoutRequestId;
+                setMpesaStatus(
+                    true,
+                    'waiting',
+                    stkData.mode === 'simulation'
+                        ? 'Simulation: fake STK — success in a few seconds…'
+                        : 'Check your phone — enter your M-Pesa PIN to approve payment.'
+                );
+                confirmBtn.textContent = 'Waiting for phone…';
+
+                mpesaPollDeadline = Date.now() + 120000;
+
+                async function mpesaPollTick() {
+                    if (Date.now() > mpesaPollDeadline) {
+                        stopMpesaPolling();
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = 'Pay with M-Pesa';
+                        setMpesaStatus(true, 'error', 'Timed out waiting for M-Pesa. Try again.');
+                        showToast('Payment timed out', 'error');
+                        return;
+                    }
+
+                    try {
+                        const st = await pollMpesaStatus(checkoutRequestId);
+                        if (st.status === 'completed') {
+                            stopMpesaPolling();
+                            setMpesaStatus(true, 'success', 'Paid! Placing your order…');
+                            const receipt = st.mpesaReceipt ? ` Receipt ${st.mpesaReceipt}` : '';
+                            const method = stkData.mode === 'simulation'
+                                ? 'M-Pesa STK (simulation)'
+                                : `M-Pesa STK${receipt}`;
+
+                            const data = await placeOrderAfterPayment(method);
+                            showToast('Order placed successfully! 🎉', 'success');
+                            cart = [];
+                            localStorage.removeItem('cart');
+                            updateCartDisplay();
+                            closePaymentModal();
+                            toggleCart();
+                            setTimeout(() => {
+                                alert(
+                                    `Order #${data.orderId} placed successfully!\nTotal: KSh ${data.totalAmount}\nPayment: ${method}\n\nThank you for ordering!`
+                                );
+                            }, 400);
+                        } else if (st.status === 'failed') {
+                            stopMpesaPolling();
+                            confirmBtn.disabled = false;
+                            confirmBtn.textContent = 'Pay with M-Pesa';
+                            setMpesaStatus(true, 'error', st.message || 'Payment was not completed.');
+                            showToast('Payment cancelled or failed', 'error');
+                        }
+                    } catch (e) {
+                        console.error('Poll error:', e);
+                    }
+                }
+
+                mpesaPollTick();
+                mpesaPollTimer = setInterval(mpesaPollTick, 2000);
             } catch (error) {
                 console.error('❌ Checkout error:', error);
-                const confirmBtn = document.getElementById('confirmPaymentBtn');
                 confirmBtn.disabled = false;
-                confirmBtn.textContent = 'Confirm Payment';
-                showToast('Network error. Make sure server is running.', 'error');
+                confirmBtn.textContent = 'Pay with M-Pesa';
+                setMpesaStatus(true, 'error', error.message || 'Network error.');
+                showToast('Network error. Is the server running?', 'error');
             }
         }
 
@@ -1357,7 +1452,7 @@
                 confirmBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Confirm Payment button clicked');
+                    console.log('Pay with M-Pesa clicked');
                     confirmPayment();
                 });
             }

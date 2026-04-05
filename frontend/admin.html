@@ -384,6 +384,7 @@
     </div>
 
     <script>
+        const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000' : window.location.origin;
         let currentEditingId = null;
         let categories = [];
         let adminUserId = null;
@@ -439,7 +440,7 @@
         // Load categories
         async function loadCategories() {
             try {
-                const response = await fetch(`http://localhost:3000/api/admin/categories`, {
+                const response = await fetch(`${API_BASE}/api/admin/categories`, {
                     headers: {
                         'user-id': adminUserId
                     }
@@ -463,7 +464,7 @@
         async function loadFoodItems() {
             try {
                 document.getElementById('foodItemsLoading').style.display = 'block';
-                const response = await fetch(`http://localhost:3000/api/admin/food-items`, {
+                const response = await fetch(`${API_BASE}/api/admin/food-items`, {
                     headers: {
                         'user-id': adminUserId
                     }
@@ -546,8 +547,8 @@
 
             try {
                 const url = currentEditingId 
-                    ? `http://localhost:3000/api/admin/food-items/${currentEditingId}`
-                    : 'http://localhost:3000/api/admin/food-items';
+                    ? `${API_BASE}/api/admin/food-items/${currentEditingId}`
+                    : `${API_BASE}/api/admin/food-items`;
                 
                 const method = currentEditingId ? 'PUT' : 'POST';
                 
@@ -579,7 +580,7 @@
         // Edit food item
         async function editFoodItem(id) {
             try {
-                const response = await fetch(`http://localhost:3000/api/admin/food-items`, {
+                const response = await fetch(`${API_BASE}/api/admin/food-items`, {
                     headers: {
                         'user-id': adminUserId
                     }
@@ -603,7 +604,7 @@
                         const preview = document.getElementById('imagePreview');
                         const previewImg = document.getElementById('previewImg');
                         if (item.image) {
-                            previewImg.src = item.image.startsWith('http') ? item.image : `http://localhost:3000${item.image}`;
+                            previewImg.src = item.image.startsWith('http') ? item.image : `${API_BASE}${item.image}`;
                             preview.style.display = 'block';
                         } else {
                             preview.style.display = 'none';
@@ -623,7 +624,7 @@
             if (!confirm('Are you sure you want to delete this food item?')) return;
             
             try {
-                const response = await fetch(`http://localhost:3000/api/admin/food-items/${id}`, {
+                const response = await fetch(`${API_BASE}/api/admin/food-items/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'user-id': adminUserId
@@ -647,7 +648,7 @@
         async function loadOrders() {
             try {
                 document.getElementById('ordersLoading').style.display = 'block';
-                const response = await fetch(`http://localhost:3000/api/admin/orders`, {
+                const response = await fetch(`${API_BASE}/api/admin/orders`, {
                     headers: {
                         'user-id': adminUserId
                     }
@@ -693,7 +694,7 @@
         // Update order status
         async function updateOrderStatus(orderId, status) {
             try {
-                const response = await fetch(`http://localhost:3000/api/admin/orders/${orderId}/status`, {
+                const response = await fetch(`${API_BASE}/api/admin/orders/${orderId}/status`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -733,7 +734,7 @@
             try {
                 document.getElementById('usersLoading').style.display = 'block';
                 document.getElementById('usersTable').style.display = 'none';
-                const response = await fetch(`http://localhost:3000/api/admin/users`, {
+                const response = await fetch(`${API_BASE}/api/admin/users`, {
                     headers: {
                         'Content-Type': 'application/json',
                         'user-id': adminUserId
@@ -779,7 +780,7 @@
         // Toggle user admin status
         async function toggleUserAdmin(userId, makeAdmin) {
             try {
-                const response = await fetch(`http://localhost:3000/api/admin/users/${userId}/admin`, {
+                const response = await fetch(`${API_BASE}/api/admin/users/${userId}/admin`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -804,7 +805,7 @@
         async function loadCategoriesList() {
             try {
                 document.getElementById('categoriesLoading').style.display = 'block';
-                const response = await fetch(`http://localhost:3000/api/admin/categories`, {
+                const response = await fetch(`${API_BASE}/api/admin/categories`, {
                     headers: {
                         'user-id': adminUserId
                     }
@@ -844,7 +845,7 @@
             const categoryName = document.getElementById('categoryName').value;
 
             try {
-                const response = await fetch(`http://localhost:3000/api/admin/categories`, {
+                const response = await fetch(`${API_BASE}/api/admin/categories`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -872,7 +873,7 @@
             if (!confirm('Are you sure you want to delete this category?')) return;
             
             try {
-                const response = await fetch(`http://localhost:3000/api/admin/categories/${id}`, {
+                const response = await fetch(`${API_BASE}/api/admin/categories/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'user-id': adminUserId

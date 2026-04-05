@@ -13,9 +13,11 @@
     <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
     
     <script>
+        const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000' : window.location.origin;
+
         async function testRoute() {
             try {
-                const res = await fetch('http://localhost:3000/api/test');
+                const res = await fetch(`${API_BASE}/api/test`);
                 const data = await res.json();
                 document.getElementById('result').innerHTML = `<pre>✅ /api/test: ${JSON.stringify(data, null, 2)}</pre>`;
             } catch (e) {
@@ -25,7 +27,7 @@
         
         async function testAdminRoute() {
             try {
-                const res = await fetch('http://localhost:3000/api/test-admin-route');
+                const res = await fetch(`${API_BASE}/api/test-admin-route`);
                 const data = await res.json();
                 document.getElementById('result').innerHTML = `<pre>✅ /api/test-admin-route: ${JSON.stringify(data, null, 2)}</pre>`;
             } catch (e) {
@@ -35,7 +37,7 @@
         
         async function testCreateAdmin() {
             try {
-                const res = await fetch('http://localhost:3000/api/admin/create-admin', {
+                const res = await fetch(`${API_BASE}/api/admin/create-admin`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: 'test@test.com', password: 'test123' })

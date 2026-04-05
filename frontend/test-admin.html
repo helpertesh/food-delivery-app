@@ -30,6 +30,8 @@
     </ol>
     
     <script>
+        const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000' : window.location.origin;
+
         document.getElementById('adminForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -39,7 +41,7 @@
             resultDiv.innerHTML = 'Creating admin...';
             
             try {
-                const response = await fetch('http://localhost:3000/api/admin/create-admin', {
+                const response = await fetch(`${API_BASE}/api/admin/create-admin`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

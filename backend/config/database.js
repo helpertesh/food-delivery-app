@@ -1,15 +1,15 @@
 // config/database.js
 const mysql = require('mysql2');
 
-// Create a connection pool
+// Use DB_* env vars on Vercel / production; local .env optional (see .env.example).
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root', // Change to your MySQL username
-    password: 'peter368', // Change to your MySQL password
-    database: 'food_delivery_db',
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'food_delivery_db',
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
 });
 
 // Convert pool to use promises

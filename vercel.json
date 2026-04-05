@@ -1,0 +1,4 @@
+{
+  "installCommand": "cd backend && npm install",
+  "buildCommand": "node scripts/vercel-copy-public.js"
+}

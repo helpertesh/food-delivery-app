@@ -1,0 +1,12 @@
+{
+  "name": "food-delivery-app",
+  "private": true,
+  "description": "Root package for Vercel; dependencies are installed in backend/",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node scripts/vercel-copy-public.js",
+    "vercel-build": "node scripts/vercel-copy-public.js"
+  }
+}

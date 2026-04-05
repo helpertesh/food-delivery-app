@@ -10,13 +10,19 @@ const multer = require('multer');
 const db = require('./config/database');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+
+if (process.env.VERCEL) {
+    app.set('trust proxy', 1);
+}
 
 /** @type {Map<string, { status: string, resultCode?: number, resultDesc?: string, amount?: number, mpesaReceipt?: string, phone254?: string, createdAt: number, simulated?: boolean }>} */
 const mpesaTransactionState = new Map();
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, 'uploads');
+// Uploads: local disk in dev; /tmp on Vercel (ephemeral — use image URLs or cloud storage for production).
+const uploadsDir = process.env.VERCEL
+    ? path.join('/tmp', 'uploads')
+    : path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
     console.log('📁 Created uploads directory');
@@ -1047,19 +1053,23 @@ app.delete('/api/admin/categories/:id', checkAdmin, async (req, res) => {
 // Serve static files AFTER all API routes (important!)
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Start server - ONLY ONE INSTANCE
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`Open http://localhost:3000 to access the app`);
-    console.log('✅ Database: MySQL connected');
-    console.log('📋 Admin endpoint: POST /api/admin/create-admin');
-    if (mpesaDaraja.useSimulation()) {
-        console.log('💳 M-Pesa: simulation mode (MPESA_USE_SIMULATION=true)');
-    } else if (mpesaDaraja.isConfigured()) {
-        console.log('💳 M-Pesa: Daraja STK push enabled');
-    } else {
-        console.log(
-            '💳 M-Pesa: not configured — add backend/.env (see .env.example) or MPESA_USE_SIMULATION=true'
-        );
-    }
-});
+module.exports = app;
+
+// Local dev only — Vercel loads this file via api/index.js (require.main !== module).
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+        console.log(`Open http://localhost:3000 to access the app`);
+        console.log('✅ Database: MySQL connected');
+        console.log('📋 Admin endpoint: POST /api/admin/create-admin');
+        if (mpesaDaraja.useSimulation()) {
+            console.log('💳 M-Pesa: simulation mode (MPESA_USE_SIMULATION=true)');
+        } else if (mpesaDaraja.isConfigured()) {
+            console.log('💳 M-Pesa: Daraja STK push enabled');
+        } else {
+            console.log(
+                '💳 M-Pesa: not configured — add backend/.env (see .env.example) or MPESA_USE_SIMULATION=true'
+            );
+        }
+    });
+}

@@ -63,11 +63,12 @@
     </div>
 
     <script>
+        const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000' : window.location.origin;
         async function testServer() {
             const div = document.getElementById('serverResult');
             div.innerHTML = 'Testing...';
             try {
-                const res = await fetch('http://localhost:3000/api/test');
+                const res = await fetch(`${API_BASE}/api/test`);
                 const data = await res.json();
                 div.className = 'result success';
                 div.innerHTML = '✅ Server is running!<br>' + JSON.stringify(data, null, 2);
@@ -85,7 +86,7 @@
             div.innerHTML = 'Testing login...';
             
             try {
-                const res = await fetch('http://localhost:3000/api/login', {
+                const res = await fetch(`${API_BASE}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -110,7 +111,7 @@
             const div = document.getElementById('usersResult');
             div.innerHTML = 'Fetching users...';
             try {
-                const res = await fetch('http://localhost:3000/api/users');
+                const res = await fetch(`${API_BASE}/api/users`);
                 const data = await res.json();
                 
                 if (data.success) {

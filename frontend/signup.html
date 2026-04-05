@@ -219,7 +219,23 @@
                     body: JSON.stringify(formData)
                 });
 
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    const text = await response.text();
+                    errorDiv.textContent =
+                        'Server error (not JSON). Is the database reachable? Open /api/test-db on the same site. ' +
+                        (text.length < 120 ? text : '');
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
                 const data = await response.json();
+
+                if (!response.ok) {
+                    errorDiv.textContent = data.message || 'Sign up failed. Please try again.';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
 
                 if (data.success) {
                     successDiv.textContent = 'Account created successfully! Redirecting to login...';

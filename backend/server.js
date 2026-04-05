@@ -150,7 +150,13 @@ app.get('/api/test-db', async (req, res) => {
         res.json({ success: true, message: 'Database connected!', solution: rows[0].solution });
     } catch (error) {
         console.error('Database connection error:', error);
-        res.status(500).json({ success: false, message: 'Database connection failed' });
+        res.status(500).json({
+            success: false,
+            message: 'Database connection failed',
+            hint:
+                process.env.VERCEL &&
+                'In Vercel → Settings → Environment Variables set DATABASE_URL or DB_HOST/DB_USER/DB_PASSWORD/DB_NAME. Most cloud MySQL needs DB_SSL=true.',
+        });
     }
 });
 

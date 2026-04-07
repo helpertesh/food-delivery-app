@@ -21,6 +21,45 @@ function getPostgresConnectionString() {
     return null;
 }
 
+/**
+ * Vercel/Supabase URLs often include sslmode=require or verify-full. node-pg can still
+ * verify the chain and throw "self-signed certificate in certificate chain".
+ * Strip ssl-related query params so Pool `ssl` options below always apply.
+ */
+function normalizePostgresConnectionString(url) {
+    try {
+        const u = new URL(url);
+        const strip = ['sslmode', 'ssl', 'sslrootcert', 'sslcert', 'sslkey'];
+        for (const p of strip) {
+            u.searchParams.delete(p);
+        }
+        let out = u.toString();
+        if (out.endsWith('?')) {
+            out = out.slice(0, -1);
+        }
+        return out;
+    } catch {
+        return url;
+    }
+}
+
+function pgSslOption() {
+    const disableSsl = process.env.DB_SSL === 'false' || process.env.DB_SSL === '0';
+    if (disableSsl) {
+        return false;
+    }
+    const mode = (process.env.PGSSLMODE || '').toLowerCase();
+    if (mode === 'disable' || mode === 'false') {
+        return false;
+    }
+    // verify-full / require-full: strict (may fail behind some proxies; set PGSSLMODE=no-verify if needed)
+    if (mode === 'verify-full' || mode === 'require-full') {
+        return { rejectUnauthorized: true };
+    }
+    // Default for Supabase/Vercel: TLS on, do not fail on intermediate/CA quirks
+    return { rejectUnauthorized: false };
+}
+
 function buildMysqlPoolConfig() {
     const dbUrl = process.env.DATABASE_URL?.trim();
     if (dbUrl && /^mysql/i.test(dbUrl)) {
@@ -61,17 +100,17 @@ function buildMysqlPoolConfig() {
     return config;
 }
 
-const postgresUrl = getPostgresConnectionString();
+const postgresUrlRaw = getPostgresConnectionString();
+const postgresUrl = postgresUrlRaw ? normalizePostgresConnectionString(postgresUrlRaw) : null;
 const dialect = postgresUrl ? 'postgres' : 'mysql';
 
 let mysqlPool = null;
 let pgPool = null;
 
 if (dialect === 'postgres') {
-    const disableSsl = process.env.DB_SSL === 'false' || process.env.DB_SSL === '0';
     pgPool = new PgPool({
         connectionString: postgresUrl,
-        ssl: disableSsl ? false : { rejectUnauthorized: false },
+        ssl: pgSslOption(),
         max: process.env.VERCEL ? 2 : 10,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 20000,

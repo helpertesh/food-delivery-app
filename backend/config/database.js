@@ -4,16 +4,25 @@ const { Pool: PgPool } = require('pg');
 
 /**
  * Postgres if any of these is a postgres:// or postgresql:// URL (first match wins).
- * Vercel + Supabase often sets POSTGRES_URL / POSTGRES_URL_NON_POOLING.
+ * On Vercel + Supabase integration, variables are integration-managed (green bolt).
+ * Prefer pooled URLs first: direct POSTGRES_URL often fails from serverless; Prisma/pooler URLs work.
  */
 function getPostgresConnectionString() {
-    const keys = [
-        'POSTGRES_URL',
-        'POSTGRES_PRISMA_URL',
-        'POSTGRES_URL_NON_POOLING',
-        'SUPABASE_DB_URL',
-        'DATABASE_URL',
-    ];
+    const keys = process.env.VERCEL
+        ? [
+              'POSTGRES_PRISMA_URL',
+              'POSTGRES_URL_NON_POOLING',
+              'POSTGRES_URL',
+              'SUPABASE_DB_URL',
+              'DATABASE_URL',
+          ]
+        : [
+              'POSTGRES_URL',
+              'POSTGRES_PRISMA_URL',
+              'POSTGRES_URL_NON_POOLING',
+              'SUPABASE_DB_URL',
+              'DATABASE_URL',
+          ];
     for (const k of keys) {
         const v = process.env[k]?.trim();
         if (v && /^postgres(ql)?:\/\//i.test(v)) return v;

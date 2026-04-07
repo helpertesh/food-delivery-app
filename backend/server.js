@@ -155,7 +155,9 @@ app.get('/api/test-db', async (req, res) => {
             message: 'Database connection failed',
             hint:
                 process.env.VERCEL &&
-                'In Vercel → Settings → Environment Variables set DATABASE_URL or DB_HOST/DB_USER/DB_PASSWORD/DB_NAME. Most cloud MySQL needs DB_SSL=true.',
+                (db.dialect === 'postgres'
+                    ? 'On Vercel set POSTGRES_URL or DATABASE_URL (postgresql://…). Run schema.supabase.sql in Supabase SQL Editor if tables are missing.'
+                    : 'On Vercel set DATABASE_URL (mysql://…) or DB_HOST/DB_USER/DB_PASSWORD/DB_NAME. Most cloud MySQL needs DB_SSL=true.'),
         });
     }
 });
@@ -1066,7 +1068,7 @@ if (require.main === module) {
     app.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
         console.log(`Open http://localhost:3000 to access the app`);
-        console.log('✅ Database: MySQL connected');
+        console.log(`✅ Database: ${db.dialect === 'postgres' ? 'PostgreSQL (e.g. Supabase)' : 'MySQL'} — pool ready`);
         console.log('📋 Admin endpoint: POST /api/admin/create-admin');
         if (mpesaDaraja.useSimulation()) {
             console.log('💳 M-Pesa: simulation mode (MPESA_USE_SIMULATION=true)');

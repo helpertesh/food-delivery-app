@@ -1,4 +1,9 @@
 {
   "installCommand": "cd backend && npm install",
-  "buildCommand": "node scripts/vercel-copy-public.js"
+  "buildCommand": "node scripts/vercel-copy-public.js",
+  "rewrites": [
+    { "source": "/api", "destination": "/api" },
+    { "source": "/api/:path*", "destination": "/api?__v_path=:path*" },
+    { "source": "/uploads/:path*", "destination": "/api?__v_path=uploads/:path*" }
+  ]
 }

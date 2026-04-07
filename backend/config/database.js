@@ -1,14 +1,33 @@
-// config/database.js
+// config/database.js — MySQL (mysql2) or PostgreSQL (pg), e.g. Supabase on Vercel.
 const mysql = require('mysql2');
+const { Pool: PgPool } = require('pg');
 
 /**
- * Pool config for local dev and Vercel.
- * Hosted MySQL (Railway, PlanetScale, Aiven, RDS, etc.) usually needs DB_SSL=true or DATABASE_URL with TLS.
+ * Postgres if any of these is a postgres:// or postgresql:// URL (first match wins).
+ * Vercel + Supabase often sets POSTGRES_URL / POSTGRES_URL_NON_POOLING.
  */
-function buildPoolConfig() {
+function getPostgresConnectionString() {
+    const keys = [
+        'POSTGRES_URL',
+        'POSTGRES_PRISMA_URL',
+        'POSTGRES_URL_NON_POOLING',
+        'SUPABASE_DB_URL',
+        'DATABASE_URL',
+    ];
+    for (const k of keys) {
+        const v = process.env[k]?.trim();
+        if (v && /^postgres(ql)?:\/\//i.test(v)) return v;
+    }
+    return null;
+}
+
+function buildMysqlPoolConfig() {
     const dbUrl = process.env.DATABASE_URL?.trim();
-    if (dbUrl) {
+    if (dbUrl && /^mysql/i.test(dbUrl)) {
         return dbUrl;
+    }
+    if (dbUrl && /^postgres/i.test(dbUrl)) {
+        throw new Error('DATABASE_URL is PostgreSQL; use POSTGRES_* or unset MySQL DATABASE_URL.');
     }
 
     const useSsl = process.env.DB_SSL === 'true' || process.env.DB_SSL === '1';
@@ -42,7 +61,114 @@ function buildPoolConfig() {
     return config;
 }
 
-const cfg = buildPoolConfig();
-const pool = typeof cfg === 'string' ? mysql.createPool(cfg) : mysql.createPool(cfg);
+const postgresUrl = getPostgresConnectionString();
+const dialect = postgresUrl ? 'postgres' : 'mysql';
 
-module.exports = pool.promise();
+let mysqlPool = null;
+let pgPool = null;
+
+if (dialect === 'postgres') {
+    const disableSsl = process.env.DB_SSL === 'false' || process.env.DB_SSL === '0';
+    pgPool = new PgPool({
+        connectionString: postgresUrl,
+        ssl: disableSsl ? false : { rejectUnauthorized: false },
+        max: process.env.VERCEL ? 2 : 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 20000,
+    });
+} else {
+    const cfg = buildMysqlPoolConfig();
+    mysqlPool = typeof cfg === 'string' ? mysql.createPool(cfg) : mysql.createPool(cfg);
+}
+
+function convertPlaceholdersToPg(sql) {
+    let n = 0;
+    return sql.replace(/\?/g, () => `$${++n}`);
+}
+
+function returningColumnForInsert(sql) {
+    const m = sql.match(/\bINSERT\s+INTO\s+["`]?(\w+)["`]?\s/i);
+    if (!m) return null;
+    const table = m[1].toLowerCase();
+    const map = {
+        users: 'id',
+        orders: 'order_id',
+        order_items: 'id',
+        food_item: 'food_id',
+        category: 'category_id',
+    };
+    return map[table] || null;
+}
+
+async function queryPostgres(sql, params = []) {
+    const p = params || [];
+
+    if (/SHOW\s+TABLES\s+LIKE\s+'users'/i.test(sql)) {
+        const r = await pgPool.query(
+            `SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public' AND tablename = 'users'`
+        );
+        return [r.rows, undefined];
+    }
+
+    if (/^\s*SHOW\s+TABLES\s*$/i.test(sql.trim())) {
+        const r = await pgPool.query(
+            `SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public' ORDER BY tablename`
+        );
+        return [r.rows, undefined];
+    }
+
+    if (/ALTER\s+TABLE\s+users\s+ADD\s+COLUMN\s+is_admin\s+TINYINT/i.test(sql)) {
+        await pgPool.query(
+            'ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin SMALLINT DEFAULT 0'
+        );
+        return [[], undefined];
+    }
+
+    if (/CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s+users/i.test(sql) && /ENGINE\s*=\s*InnoDB/i.test(sql)) {
+        await pgPool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
+                phone VARCHAR(20) NOT NULL,
+                address TEXT NOT NULL,
+                is_admin SMALLINT DEFAULT 0,
+                created_at TIMESTAMPTZ DEFAULT NOW(),
+                updated_at TIMESTAMPTZ DEFAULT NOW()
+            )
+        `);
+        return [[], undefined];
+    }
+
+    let text = convertPlaceholdersToPg(sql);
+    if (/^\s*INSERT\s+/i.test(text) && !/\bRETURNING\b/i.test(text)) {
+        const col = returningColumnForInsert(sql);
+        if (col) {
+            text = `${text.trim()} RETURNING ${col}`;
+        }
+    }
+
+    const r = await pgPool.query(text, p);
+
+    if (r.command === 'INSERT' && r.rows && r.rows.length > 0) {
+        const row = r.rows[0];
+        const insertId = row.id ?? row.order_id ?? row.food_id ?? row.category_id;
+        return [{ insertId: Number(insertId) }, undefined];
+    }
+
+    return [r.rows, undefined];
+}
+
+async function queryMysql(sql, params) {
+    return mysqlPool.promise().query(sql, params);
+}
+
+async function query(sql, params) {
+    if (dialect === 'postgres') {
+        return queryPostgres(sql, params);
+    }
+    return queryMysql(sql, params ?? []);
+}
+
+module.exports = { query, dialect };

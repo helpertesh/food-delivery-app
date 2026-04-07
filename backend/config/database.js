@@ -3,32 +3,35 @@ const mysql = require('mysql2');
 const { Pool: PgPool } = require('pg');
 const { parse: parsePgConn } = require('pg-connection-string');
 
-/**
- * Postgres if any of these is a postgres:// or postgresql:// URL (first match wins).
- * On Vercel + Supabase integration, variables are integration-managed (green bolt).
- * Prefer pooled URLs first: direct POSTGRES_URL often fails from serverless; Prisma/pooler URLs work.
- */
-function getPostgresConnectionString() {
-    const keys = process.env.VERCEL
-        ? [
-              'POSTGRES_PRISMA_URL',
-              'POSTGRES_URL_NON_POOLING',
-              'POSTGRES_URL',
-              'SUPABASE_DB_URL',
-              'DATABASE_URL',
-          ]
-        : [
-              'POSTGRES_URL',
-              'POSTGRES_PRISMA_URL',
-              'POSTGRES_URL_NON_POOLING',
-              'SUPABASE_DB_URL',
-              'DATABASE_URL',
-          ];
-    for (const k of keys) {
+/** Prefer pooler / Prisma URL first everywhere (local + Vercel + Supabase integration). */
+const POSTGRES_URL_ENV_KEYS = [
+    'POSTGRES_PRISMA_URL',
+    'POSTGRES_URL_NON_POOLING',
+    'POSTGRES_URL',
+    'SUPABASE_DB_URL',
+    'DATABASE_URL',
+];
+
+function getPostgresConnectionEnvKey() {
+    for (const k of POSTGRES_URL_ENV_KEYS) {
         const v = process.env[k]?.trim();
-        if (v && /^postgres(ql)?:\/\//i.test(v)) return v;
+        if (v && /^postgres(ql)?:\/\//i.test(v)) return k;
     }
     return null;
+}
+
+function getPostgresConnectionString() {
+    const k = getPostgresConnectionEnvKey();
+    return k ? process.env[k].trim() : null;
+}
+
+function getPostgresEnvFlags() {
+    const out = {};
+    for (const k of POSTGRES_URL_ENV_KEYS) {
+        const v = process.env[k]?.trim();
+        out[k] = Boolean(v && /^postgres(ql)?:\/\//i.test(v));
+    }
+    return out;
 }
 
 /**
@@ -70,34 +73,34 @@ function pgSslOption() {
 }
 
 /**
- * Build Pool options from URL without passing connectionString + ssl together (pg can merge URL sslmode
- * and still verify). Strip ssl* query params after normalize; force our ssl object.
+ * Build Pool config from URL: only pass explicit fields + ssl (avoid stray query params confusing pg).
  */
 function buildPgPoolConfig(connectionUrl) {
     const normalized = normalizePostgresConnectionString(connectionUrl);
     const parsed = parsePgConn(normalized);
-    const opts = { ...parsed };
-    delete opts.ssl;
-    for (const k of Object.keys(opts)) {
-        if (k === 'sslmode' || k.startsWith('ssl')) {
-            delete opts[k];
-        }
+    const config = {
+        user: parsed.user,
+        password: parsed.password,
+        host: parsed.host,
+        database: parsed.database || undefined,
+        ssl: pgSslOption(),
+        max: process.env.VERCEL ? 2 : 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 20000,
+    };
+    if (parsed.options) {
+        config.options = parsed.options;
     }
-    if (opts.port != null && opts.port !== '') {
-        const p = Number(opts.port);
+    if (parsed.port != null && parsed.port !== '') {
+        const p = Number(parsed.port);
         if (!Number.isNaN(p) && p > 0) {
-            opts.port = p;
-        } else {
-            delete opts.port;
+            config.port = p;
         }
-    } else {
-        delete opts.port;
     }
-    opts.ssl = pgSslOption();
-    opts.max = process.env.VERCEL ? 2 : 10;
-    opts.idleTimeoutMillis = 30000;
-    opts.connectionTimeoutMillis = 20000;
-    return opts;
+    if (!config.host || !config.user) {
+        throw new Error('Invalid Postgres connection string: missing host or user');
+    }
+    return config;
 }
 
 function buildMysqlPoolConfig() {
@@ -152,8 +155,7 @@ function buildMysqlPoolConfig() {
 }
 
 const postgresUrlRaw = getPostgresConnectionString();
-const postgresUrl = postgresUrlRaw ? normalizePostgresConnectionString(postgresUrlRaw) : null;
-const dialect = postgresUrl ? 'postgres' : 'mysql';
+const dialect = postgresUrlRaw ? 'postgres' : 'mysql';
 
 let mysqlPool = null;
 let pgPool = null;
@@ -255,4 +257,9 @@ async function query(sql, params) {
     return queryMysql(sql, params ?? []);
 }
 
-module.exports = { query, dialect };
+module.exports = {
+    query,
+    dialect,
+    getPostgresConnectionEnvKey,
+    getPostgresEnvFlags,
+};

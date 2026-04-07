@@ -1,6 +1,7 @@
 // config/database.js — MySQL (mysql2) or PostgreSQL (pg), e.g. Supabase on Vercel.
 const mysql = require('mysql2');
 const { Pool: PgPool } = require('pg');
+const { parse: parsePgConn } = require('pg-connection-string');
 
 /**
  * Postgres if any of these is a postgres:// or postgresql:// URL (first match wins).
@@ -61,12 +62,42 @@ function pgSslOption() {
     if (mode === 'disable' || mode === 'false') {
         return false;
     }
-    // verify-full / require-full: strict (may fail behind some proxies; set PGSSLMODE=no-verify if needed)
     if (mode === 'verify-full' || mode === 'require-full') {
         return { rejectUnauthorized: true };
     }
-    // Default for Supabase/Vercel: TLS on, do not fail on intermediate/CA quirks
+    // Supabase / pooler: TLS without strict CA chain (fixes "self-signed certificate in certificate chain")
     return { rejectUnauthorized: false };
+}
+
+/**
+ * Build Pool options from URL without passing connectionString + ssl together (pg can merge URL sslmode
+ * and still verify). Strip ssl* query params after normalize; force our ssl object.
+ */
+function buildPgPoolConfig(connectionUrl) {
+    const normalized = normalizePostgresConnectionString(connectionUrl);
+    const parsed = parsePgConn(normalized);
+    const opts = { ...parsed };
+    delete opts.ssl;
+    for (const k of Object.keys(opts)) {
+        if (k === 'sslmode' || k.startsWith('ssl')) {
+            delete opts[k];
+        }
+    }
+    if (opts.port != null && opts.port !== '') {
+        const p = Number(opts.port);
+        if (!Number.isNaN(p) && p > 0) {
+            opts.port = p;
+        } else {
+            delete opts.port;
+        }
+    } else {
+        delete opts.port;
+    }
+    opts.ssl = pgSslOption();
+    opts.max = process.env.VERCEL ? 2 : 10;
+    opts.idleTimeoutMillis = 30000;
+    opts.connectionTimeoutMillis = 20000;
+    return opts;
 }
 
 function buildMysqlPoolConfig() {
@@ -80,13 +111,24 @@ function buildMysqlPoolConfig() {
 
     const useSsl = process.env.DB_SSL === 'true' || process.env.DB_SSL === '1';
 
-    const ssl = useSsl
-        ? {
-              rejectUnauthorized:
-                  process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false' &&
-                  process.env.DB_SSL_REJECT_UNAUTHORIZED !== '0',
-          }
-        : undefined;
+    let ssl;
+    if (useSsl) {
+        const explicitRelax =
+            process.env.DB_SSL_REJECT_UNAUTHORIZED === 'false' ||
+            process.env.DB_SSL_REJECT_UNAUTHORIZED === '0';
+        const explicitStrict =
+            process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true' ||
+            process.env.DB_SSL_REJECT_UNAUTHORIZED === '1';
+        if (explicitRelax) {
+            ssl = { rejectUnauthorized: false };
+        } else if (explicitStrict) {
+            ssl = { rejectUnauthorized: true };
+        } else if (process.env.VERCEL) {
+            ssl = { rejectUnauthorized: false };
+        } else {
+            ssl = { rejectUnauthorized: true };
+        }
+    }
 
     const config = {
         host: process.env.DB_HOST || 'localhost',
@@ -117,13 +159,7 @@ let mysqlPool = null;
 let pgPool = null;
 
 if (dialect === 'postgres') {
-    pgPool = new PgPool({
-        connectionString: postgresUrl,
-        ssl: pgSslOption(),
-        max: process.env.VERCEL ? 2 : 10,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 20000,
-    });
+    pgPool = new PgPool(buildPgPoolConfig(postgresUrlRaw));
 } else {
     const cfg = buildMysqlPoolConfig();
     mysqlPool = typeof cfg === 'string' ? mysql.createPool(cfg) : mysql.createPool(cfg);

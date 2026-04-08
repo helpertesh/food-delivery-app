@@ -143,6 +143,21 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
+function sanitizeDbErrorForClient(error) {
+    const m = (error.message || '').slice(0, 280);
+    const c = error.code;
+    if (c === '28P01' || /password authentication failed/i.test(m)) {
+        return 'PostgreSQL authentication failed. In Supabase, reset the database password and refresh the Vercel Supabase integration (or update POSTGRES_* URLs).';
+    }
+    if (/certificate|self-signed|TLS|SSL/i.test(m)) {
+        return 'TLS/SSL error while connecting to Postgres.';
+    }
+    if (c === 'ENOTFOUND' || c === 'ECONNREFUSED' || /getaddrinfo|ETIMEDOUT|timeout/i.test(m)) {
+        return 'Network error: could not reach the database host (wrong host/port or firewall).';
+    }
+    return m || String(c || 'unknown error');
+}
+
 // Test database connection
 app.get('/api/test-db', async (req, res) => {
     try {
@@ -150,15 +165,24 @@ app.get('/api/test-db', async (req, res) => {
         res.json({ success: true, message: 'Database connected!', solution: rows[0].solution });
     } catch (error) {
         console.error('Database connection error:', error);
-        res.status(500).json({
+        const payload = {
             success: false,
             message: 'Database connection failed',
-            hint:
-                process.env.VERCEL &&
-                (db.dialect === 'postgres'
-                    ? 'On Vercel set POSTGRES_URL or DATABASE_URL (postgresql://…). Run schema.supabase.sql in Supabase SQL Editor if tables are missing.'
-                    : 'On Vercel set DATABASE_URL (mysql://…) or DB_HOST/DB_USER/DB_PASSWORD/DB_NAME. Most cloud MySQL needs DB_SSL=true.'),
-        });
+            dialect: db.dialect,
+            detail: sanitizeDbErrorForClient(error),
+            code: error.code != null ? String(error.code) : null,
+        };
+        if (db.dialect === 'postgres') {
+            payload.postgresConnectionFrom = db.getPostgresConnectionEnvKey();
+            payload.postgresEnvSet = db.getPostgresEnvFlags();
+        }
+        if (process.env.VERCEL) {
+            payload.hint =
+                db.dialect === 'postgres'
+                    ? 'Supabase: use a full postgresql:// URI on POSTGRES_PRISMA_URL or POSTGRES_URL. Run backend/schema.supabase.sql in the SQL Editor if tables are missing.'
+                    : 'Set DATABASE_URL (mysql://…) or DB_HOST/DB_USER/DB_PASSWORD/DB_NAME. Most cloud MySQL needs DB_SSL=true.';
+        }
+        res.status(500).json(payload);
     }
 });
 

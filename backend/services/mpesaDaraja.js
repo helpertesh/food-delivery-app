@@ -25,27 +25,73 @@ function getBaseUrl() {
         : 'https://sandbox.safaricom.co.ke';
 }
 
+function envTrim(name) {
+    const v = process.env[name];
+    return v == null ? '' : String(v).trim();
+}
+
+/**
+ * Accept either full callback URL or ngrok base only (auto-append /api/payment/mpesa/callback).
+ */
+function effectiveCallbackUrl() {
+    let base = envTrim('MPESA_CALLBACK_URL');
+    if (!base) return '';
+    base = base.replace(/\/+$/, '');
+    if (/\/api\/payment\/mpesa\/callback$/i.test(base)) return base;
+    return `${base}/api/payment/mpesa/callback`;
+}
+
 function isConfigured() {
     return Boolean(
-        process.env.MPESA_CONSUMER_KEY &&
-            process.env.MPESA_CONSUMER_SECRET &&
-            process.env.MPESA_SHORTCODE &&
-            process.env.MPESA_PASSKEY &&
-            process.env.MPESA_CALLBACK_URL
+        envTrim('MPESA_CONSUMER_KEY') &&
+            envTrim('MPESA_CONSUMER_SECRET') &&
+            envTrim('MPESA_SHORTCODE') &&
+            envTrim('MPESA_PASSKEY') &&
+            effectiveCallbackUrl()
     );
+}
+
+/** For diagnostics: which vars are non-empty (no secret values). */
+function getConfigPresence() {
+    return {
+        consumerKey: Boolean(envTrim('MPESA_CONSUMER_KEY')),
+        consumerSecret: Boolean(envTrim('MPESA_CONSUMER_SECRET')),
+        shortcode: Boolean(envTrim('MPESA_SHORTCODE')),
+        passkey: Boolean(envTrim('MPESA_PASSKEY')),
+        callbackRaw: Boolean(envTrim('MPESA_CALLBACK_URL')),
+        callbackEffective: Boolean(effectiveCallbackUrl()),
+    };
 }
 
 function useSimulation() {
     return (process.env.MPESA_USE_SIMULATION || '').toLowerCase() === 'true';
 }
 
+/**
+ * Daraja sometimes returns an empty body (network, WAF, bad credentials). Avoid res.json() throwing.
+ */
+async function parseDarajaResponse(res, label) {
+    const raw = await res.text();
+    const trimmed = raw.trim();
+    if (!trimmed) {
+        throw new Error(
+            `${label}: empty response (HTTP ${res.status}). Check internet, firewall, and that Consumer Key/Secret match your Daraja sandbox app (secret must not equal key).`
+        );
+    }
+    try {
+        return JSON.parse(trimmed);
+    } catch {
+        throw new Error(`${label}: non-JSON response (HTTP ${res.status}): ${trimmed.slice(0, 200)}`);
+    }
+}
+
 async function getAccessToken() {
-    const key = process.env.MPESA_CONSUMER_KEY;
-    const secret = process.env.MPESA_CONSUMER_SECRET;
+    const key = envTrim('MPESA_CONSUMER_KEY');
+    const secret = envTrim('MPESA_CONSUMER_SECRET');
     const auth = Buffer.from(`${key}:${secret}`).toString('base64');
     const url = `${getBaseUrl()}/oauth/v1/generate?grant_type=client_credentials`;
     const res = await fetch(url, { headers: { Authorization: `Basic ${auth}` } });
-    const data = await res.json();
+    const data = await parseDarajaResponse(res, 'Daraja OAuth');
     if (!res.ok || !data.access_token) {
         const msg = data.error_description || data.errorMessage || JSON.stringify(data);
         throw new Error(`Daraja OAuth failed: ${msg}`);
@@ -69,9 +115,9 @@ function formatPhone254(phoneNumber) {
  * @param {string} opts.transactionDesc
  */
 async function initiateStkPush({ phoneNumber, amount, accountReference, transactionDesc }) {
-    const shortcode = process.env.MPESA_SHORTCODE;
-    const passkey = process.env.MPESA_PASSKEY;
-    const callbackUrl = process.env.MPESA_CALLBACK_URL;
+    const shortcode = envTrim('MPESA_SHORTCODE');
+    const passkey = envTrim('MPESA_PASSKEY');
+    const callbackUrl = effectiveCallbackUrl();
     const transactionType =
         process.env.MPESA_TRANSACTION_TYPE || 'CustomerPayBillOnline';
     const partyB = process.env.MPESA_PARTY_B || shortcode;
@@ -105,7 +151,7 @@ async function initiateStkPush({ phoneNumber, amount, accountReference, transact
         body: JSON.stringify(body),
     });
 
-    const data = await res.json();
+    const data = await parseDarajaResponse(res, 'Daraja STK');
     if (!res.ok) {
         throw new Error(data.errorMessage || data.requestId || 'STK request failed');
     }
@@ -158,4 +204,6 @@ module.exports = {
     formatPhone254,
     initiateStkPush,
     parseStkCallback,
+    effectiveCallbackUrl,
+    getConfigPresence,
 };

@@ -3,6 +3,9 @@ const mysql = require('mysql2');
 const { Pool: PgPool } = require('pg');
 const { parse: parsePgConn } = require('pg-connection-string');
 
+/** Set DATABASE_DIALECT=mysql in backend/.env to always use MySQL (ignore Postgres URLs in the environment). */
+const forceMysqlDialect = (process.env.DATABASE_DIALECT || '').toLowerCase() === 'mysql';
+
 /** Prefer pooler / Prisma URL first everywhere (local + Vercel + Supabase integration). */
 const POSTGRES_URL_ENV_KEYS = [
     'POSTGRES_PRISMA_URL',
@@ -104,12 +107,12 @@ function buildPgPoolConfig(connectionUrl) {
 }
 
 function buildMysqlPoolConfig() {
-    const dbUrl = process.env.DATABASE_URL?.trim();
+    const dbUrl = process.env.DATABASE_URL?.trim() || '';
+    if (dbUrl && /^postgres/i.test(dbUrl) && !forceMysqlDialect) {
+        throw new Error('DATABASE_URL is PostgreSQL; use POSTGRES_* or set DATABASE_DIALECT=mysql and clear DATABASE_URL.');
+    }
     if (dbUrl && /^mysql/i.test(dbUrl)) {
         return dbUrl;
-    }
-    if (dbUrl && /^postgres/i.test(dbUrl)) {
-        throw new Error('DATABASE_URL is PostgreSQL; use POSTGRES_* or unset MySQL DATABASE_URL.');
     }
 
     const useSsl = process.env.DB_SSL === 'true' || process.env.DB_SSL === '1';
@@ -154,16 +157,20 @@ function buildMysqlPoolConfig() {
     return config;
 }
 
-const postgresUrlRaw = getPostgresConnectionString();
+const postgresUrlRaw = forceMysqlDialect ? null : getPostgresConnectionString();
 const dialect = postgresUrlRaw ? 'postgres' : 'mysql';
 
 let mysqlPool = null;
 let pgPool = null;
+let mysqlPoolConfig = null;
+let mysqlBlankPasswordFallbackTried = false;
+let mysqlCreateDatabaseTried = false;
 
 if (dialect === 'postgres') {
     pgPool = new PgPool(buildPgPoolConfig(postgresUrlRaw));
 } else {
     const cfg = buildMysqlPoolConfig();
+    mysqlPoolConfig = cfg;
     mysqlPool = typeof cfg === 'string' ? mysql.createPool(cfg) : mysql.createPool(cfg);
 }
 
@@ -246,8 +253,84 @@ async function queryPostgres(sql, params = []) {
     return [r.rows, undefined];
 }
 
+function canTryMysqlBlankPasswordFallback(error) {
+    if (dialect !== 'mysql') return false;
+    if (mysqlBlankPasswordFallbackTried) return false;
+    if (!error || String(error.code) !== 'ER_ACCESS_DENIED_ERROR') return false;
+    if (!mysqlPoolConfig || typeof mysqlPoolConfig === 'string') return false;
+    const user = String(mysqlPoolConfig.user || '').toLowerCase();
+    if (user !== 'root') return false;
+    const hasPassword = String(mysqlPoolConfig.password ?? '').length > 0;
+    return hasPassword;
+}
+
+function switchMysqlPoolToBlankPassword() {
+    if (!mysqlPoolConfig || typeof mysqlPoolConfig === 'string') return false;
+    const nextCfg = { ...mysqlPoolConfig, password: '' };
+    try {
+        if (mysqlPool && typeof mysqlPool.end === 'function') {
+            mysqlPool.end(() => {});
+        }
+    } catch (_) {}
+    mysqlPoolConfig = nextCfg;
+    mysqlPool = mysql.createPool(nextCfg);
+    mysqlBlankPasswordFallbackTried = true;
+    console.warn(
+        'MySQL auth failed for root with configured password; retried with blank password fallback.'
+    );
+    return true;
+}
+
+function canTryMysqlCreateDatabase(error) {
+    if (dialect !== 'mysql') return false;
+    if (mysqlCreateDatabaseTried) return false;
+    if (!error || String(error.code) !== 'ER_BAD_DB_ERROR') return false;
+    if (!mysqlPoolConfig || typeof mysqlPoolConfig === 'string') return false;
+    return String(mysqlPoolConfig.database || '').trim().length > 0;
+}
+
+async function createMissingMysqlDatabaseAndReconnect() {
+    if (!mysqlPoolConfig || typeof mysqlPoolConfig === 'string') return false;
+    const dbName = String(mysqlPoolConfig.database || '').trim();
+    if (!dbName) return false;
+
+    const adminCfg = { ...mysqlPoolConfig };
+    delete adminCfg.database;
+
+    const adminPool = mysql.createPool(adminCfg);
+    try {
+        await adminPool
+            .promise()
+            .query(`CREATE DATABASE IF NOT EXISTS \`${dbName.replace(/`/g, '``')}\``);
+    } finally {
+        try {
+            await adminPool.end();
+        } catch (_) {}
+    }
+
+    try {
+        if (mysqlPool && typeof mysqlPool.end === 'function') {
+            mysqlPool.end(() => {});
+        }
+    } catch (_) {}
+    mysqlPool = mysql.createPool(mysqlPoolConfig);
+    mysqlCreateDatabaseTried = true;
+    console.warn(`MySQL database "${dbName}" was missing; created automatically.`);
+    return true;
+}
+
 async function queryMysql(sql, params) {
-    return mysqlPool.promise().query(sql, params);
+    try {
+        return await mysqlPool.promise().query(sql, params);
+    } catch (error) {
+        if (canTryMysqlCreateDatabase(error) && (await createMissingMysqlDatabaseAndReconnect())) {
+            return mysqlPool.promise().query(sql, params);
+        }
+        if (canTryMysqlBlankPasswordFallback(error) && switchMysqlPoolToBlankPassword()) {
+            return mysqlPool.promise().query(sql, params);
+        }
+        throw error;
+    }
 }
 
 async function query(sql, params) {
@@ -260,6 +343,7 @@ async function query(sql, params) {
 module.exports = {
     query,
     dialect,
+    forceMysqlDialect,
     getPostgresConnectionEnvKey,
     getPostgresEnvFlags,
 };

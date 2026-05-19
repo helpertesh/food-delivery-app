@@ -16,6 +16,11 @@
             background: #f8f9fa;
         }
 
+        body.dark-mode {
+            background: #121212;
+            color: #e6e6e6;
+        }
+
         .navbar {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -51,6 +56,396 @@
         .nav-links a:hover, .nav-links a.active {
             background: rgba(255,255,255,0.2);
         }
+
+        .theme-toggle {
+            color: white;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.22);
+            border-radius: 8px;
+            padding: 7px 11px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        .about-icon-btn {
+            color: white;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.22);
+            border-radius: 8px;
+            padding: 7px 12px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 600;
+            min-width: 84px;
+        }
+
+        .loyalty-pill {
+            background: rgba(255, 215, 0, 0.25);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .loyalty-pill:hover {
+            background: rgba(255, 215, 0, 0.4);
+        }
+
+        .loyalty-rewards-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 2250;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .loyalty-rewards-modal.open { display: flex; }
+
+        .loyalty-rewards-box {
+            background: white;
+            padding: 1.25rem;
+            border-radius: 14px;
+            max-width: 720px;
+            width: 100%;
+            max-height: min(85vh, 640px);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        .loyalty-rewards-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .loyalty-reward-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+            overflow-y: auto;
+            padding: 4px 2px 8px;
+        }
+
+        .loyalty-reward-card {
+            border: 1px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: #fafbff;
+        }
+
+        .loyalty-reward-card strong { font-size: 0.92rem; line-height: 1.25; }
+
+        .loyalty-reward-card .pts {
+            color: #5c4d9e;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .loyalty-reward-card button {
+            margin-top: auto;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .loyalty-reward-card button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .feature-strip {
+            background: white;
+            border-radius: 15px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            border: 1px solid #eef0f4;
+        }
+
+        .feature-strip h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .leaderboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .leaderboard-card {
+            border: 1px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 10px;
+            background: #fff;
+        }
+
+        .leaderboard-rank {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #5c4d9e;
+        }
+
+        .leaderboard-perk {
+            margin-top: 6px;
+            font-size: 0.83rem;
+            color: #555;
+            background: #f7f6ff;
+            border-radius: 8px;
+            padding: 6px 8px;
+        }
+
+        .reco-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .reco-card {
+            border: 1px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+
+        .reco-card .why {
+            color: #666;
+            font-size: 0.8rem;
+            margin-top: 6px;
+        }
+
+        .pending-review {
+            border: 1px solid #ffe0b2;
+            background: #fff8e1;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+            transition: background 0.2s, box-shadow 0.2s;
+            width: 100%;
+            text-align: left;
+            border-style: solid;
+        }
+
+        .pending-review:hover {
+            background: #fff3e0;
+            box-shadow: 0 2px 10px rgba(255, 152, 0, 0.2);
+        }
+
+        .pending-review:focus {
+            outline: 2px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        .pending-review .rate-chevron {
+            font-size: 1.25rem;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .chat-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.45);
+            z-index: 2100;
+        }
+
+        .chat-panel {
+            display: none;
+            position: fixed;
+            bottom: 90px;
+            right: 24px;
+            width: min(380px, calc(100vw - 32px));
+            height: 420px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+            z-index: 2100;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+
+        .chat-panel.open { display: flex; }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 14px;
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            font-size: 0.9rem;
+            background: #fafafa;
+        }
+
+        .chat-bubble { margin-bottom: 10px; padding: 8px 10px; border-radius: 10px; max-width: 92%; }
+        .chat-bubble.user { background: #e3e7ff; margin-left: auto; }
+        .chat-bubble.bot { background: white; border: 1px solid #eee; }
+
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+            padding: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .chat-input-row input {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .chat-input-row button {
+            padding: 8px 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .review-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 2300;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .review-modal.open { display: flex; }
+
+        .about-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 2400;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .about-modal.open { display: flex; }
+
+        .about-box {
+            background: white;
+            border-radius: 14px;
+            width: min(940px, 100%);
+            max-height: min(88vh, 760px);
+            overflow: auto;
+            padding: 1.1rem 1.1rem 1.25rem;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+        }
+
+        .about-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .about-close {
+            border: 1px solid #d8d8d8;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .about-copy {
+            color: #555;
+            font-size: 0.92rem;
+            line-height: 1.55;
+            margin-bottom: 12px;
+        }
+
+        .about-video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 12px;
+        }
+
+        .about-video-card {
+            border: 1px solid #ececec;
+            border-radius: 10px;
+            padding: 10px;
+            background: #fafbff;
+        }
+
+        .about-video-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .about-video-card iframe {
+            width: 100%;
+            height: 180px;
+            border: 0;
+            border-radius: 8px;
+            background: #111;
+        }
+
+        .review-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .star-row { font-size: 1.5rem; cursor: pointer; letter-spacing: 4px; }
 
         .cart-icon {
             position: relative;
@@ -181,12 +576,293 @@
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
 
+        .track-empty {
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        .track-order-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .track-order-row label {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .track-order-row select {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .track-timeline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin: 10px 0 14px;
+        }
+
+        .track-step {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            background: #eee;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .track-step.done {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-color: #c8e6c9;
+        }
+
+        .track-step.active {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+            color: #5c4d9e;
+            border-color: #667eea;
+            font-weight: 700;
+        }
+
+        .track-status-chip {
+            display: inline-block;
+            font-size: 0.8rem;
+            text-transform: capitalize;
+            padding: 4px 10px;
+            border-radius: 8px;
+            background: #f0f0f0;
+            color: #444;
+        }
+
+        .track-countdown {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #5c4d9e;
+            margin: 8px 0 10px;
+            line-height: 1.4;
+        }
+
+        .track-live-wrap {
+            margin-top: 10px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+            max-width: 560px;
+        }
+
+        .track-live-wrap video {
+            width: 100%;
+            max-height: 280px;
+            display: block;
+            background: #000;
+        }
+
+        .track-live-caption {
+            font-size: 0.82rem;
+            color: #666;
+            padding: 8px 10px;
+            margin: 0;
+            background: #fafafa;
+        }
+
+        .track-no-live {
+            font-size: 0.88rem;
+            color: #777;
+            margin: 6px 0 0;
+            line-height: 1.45;
+        }
+
+        .track-live-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .track-live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #fff;
+            background: #e53935;
+            padding: 6px 12px;
+            border-radius: 8px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(229, 57, 53, 0.35);
+            animation: track-live-pulse 1.4s ease-in-out infinite;
+        }
+
+        .track-live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.45);
+        }
+
+        @keyframes track-live-pulse {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.92;
+                transform: scale(0.98);
+            }
+        }
+
+        .track-live-sub {
+            font-size: 0.88rem;
+            color: #666;
+        }
+
         /* Menu Grid */
         .menu-section {
             background: white;
             padding: 2rem;
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        body.dark-mode .feature-strip,
+        body.dark-mode .profile-section,
+        body.dark-mode .category-nav,
+        body.dark-mode .menu-section,
+        body.dark-mode .chat-panel,
+        body.dark-mode .review-box,
+        body.dark-mode .about-box,
+        body.dark-mode .payment-content,
+        body.dark-mode .loyalty-rewards-box,
+        body.dark-mode .cart-panel {
+            background: #1e1e1e;
+            color: #e8e8e8;
+            border-color: #333;
+        }
+
+        body.dark-mode .info-item,
+        body.dark-mode .order-summary,
+        body.dark-mode .payment-instructions,
+        body.dark-mode .cart-item,
+        body.dark-mode .chat-bubble.bot,
+        body.dark-mode .reco-card,
+        body.dark-mode .leaderboard-card,
+        body.dark-mode .about-video-card,
+        body.dark-mode .loyalty-reward-card {
+            background: #262626;
+            color: #e8e8e8;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .menu-card {
+            background: #1f1f1f;
+            border-color: #333;
+        }
+
+        body.dark-mode .menu-name,
+        body.dark-mode .menu-section h2,
+        body.dark-mode .profile-section h2,
+        body.dark-mode .feature-strip h3,
+        body.dark-mode .order-summary h3,
+        body.dark-mode .payment-instructions h3 {
+            color: #f5f5f5;
+        }
+
+        body.dark-mode .menu-description,
+        body.dark-mode .info-item label,
+        body.dark-mode .payment-header p,
+        body.dark-mode .payment-instructions ol,
+        body.dark-mode .why {
+            color: #bdbdbd;
+        }
+
+        body.dark-mode .category-btn {
+            background: #2a2a2a;
+            color: #ddd;
+        }
+
+        body.dark-mode .category-btn:hover {
+            background: #353535;
+        }
+
+        body.dark-mode .track-step {
+            background: #2a2a2a;
+            color: #ccc;
+            border-color: #444;
+        }
+
+        body.dark-mode .track-step.done {
+            background: #1b3320;
+            color: #a5d6a7;
+            border-color: #355c3d;
+        }
+
+        body.dark-mode .track-step.active {
+            color: #c4b8ff;
+            border-color: #667eea;
+        }
+
+        body.dark-mode .track-status-chip {
+            background: #2a2a2a;
+            color: #ddd;
+        }
+
+        body.dark-mode .track-countdown {
+            color: #b8aeff;
+        }
+
+        body.dark-mode .track-live-wrap {
+            border-color: #444;
+        }
+
+        body.dark-mode .track-live-caption {
+            background: #262626;
+            color: #bbb;
+        }
+
+        body.dark-mode .track-no-live {
+            color: #aaa;
+        }
+
+        body.dark-mode .track-live-sub {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .track-order-row select {
+            background: #262626;
+            color: #eee;
+            border-color: #444;
+        }
+
+        body.dark-mode .track-empty {
+            color: #999;
+        }
+
+        body.dark-mode .pending-review {
+            background: #2a2416;
+            border-color: #59452a;
+        }
+
+        body.dark-mode .pending-review:hover {
+            background: #332a18;
+        }
+
+        body.dark-mode .about-video-title {
+            color: #f2f2f2;
+        }
+
+        body.dark-mode .about-copy {
+            color: #c7c7c7;
         }
 
         .menu-section h2 {
@@ -222,10 +898,16 @@
             height: 200px;
             object-fit: cover;
             transition: transform 0.3s;
+            display: block;
+            background: #111;
         }
 
         .menu-card:hover .menu-image {
             transform: scale(1.05);
+        }
+
+        .menu-card video.menu-image {
+            cursor: pointer;
         }
 
         .menu-info {
@@ -271,6 +953,38 @@
             font-size: 1.3rem;
             font-weight: bold;
             color: #667eea;
+        }
+
+        .menu-price-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            align-items: flex-start;
+        }
+
+        .menu-price-was {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        .menu-price-now {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #c62828;
+        }
+
+        .menu-deal-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: #ffebee;
+            color: #c62828;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-bottom: 4px;
         }
 
         .add-to-cart {
@@ -504,20 +1218,38 @@
 
         .payment-modal.show {
             display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            box-sizing: border-box;
         }
 
         .payment-content {
             background: white;
             border-radius: 20px;
-            padding: 2.5rem;
+            padding: 0;
             max-width: 500px;
             width: 90%;
+            max-height: min(92vh, 720px);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             animation: slideUp 0.3s ease;
             cursor: default;
             position: relative;
             z-index: 2001;
             pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Scroll middle; keep Cancel + Pay with M-Pesa always visible (short viewports). */
+        .payment-content-scroll {
+            overflow-y: auto;
+            flex: 1 1 auto;
+            min-height: 0;
+            padding: 2.5rem;
+            padding-bottom: 1.25rem;
+            -webkit-overflow-scrolling: touch;
         }
 
         /* Close modal when clicking outside */
@@ -730,6 +1462,11 @@
         .payment-actions {
             display: flex;
             gap: 1rem;
+            flex-shrink: 0;
+            padding: 1rem 2.5rem 2rem;
+            border-top: 1px solid #eee;
+            background: #fff;
+            border-radius: 0 0 20px 20px;
         }
 
         .payment-btn {
@@ -834,9 +1571,14 @@
     <nav class="navbar">
         <div class="logo">🍔 Food Delivery</div>
         <div class="nav-links">
-            <a href="#" class="active">Home</a>
-            <a href="#menu">Menu</a>
-            <a href="#profile">Profile</a>
+            <a href="#" class="active" data-nav-target="home">Home</a>
+            <a href="#menu" data-nav-target="menu">Menu</a>
+            <a href="#profile" data-nav-target="profile">Profile</a>
+            <a href="#leaderboardSection" data-nav-target="leaderboard">Leaderboard</a>
+            <a href="#trackOrdersSection" data-nav-target="track">Track order</a>
+            <button type="button" class="about-icon-btn" id="aboutNavBtn" title="About us and videos">About Us</button>
+            <button type="button" class="theme-toggle" id="themeToggle">🌙 Dark</button>
+            <span class="loyalty-pill" id="loyaltyNav" title="Tap to redeem points for free food" role="button" tabindex="0">⭐ 0 pts</span>
             <div class="cart-icon" onclick="toggleCart()">
                 🛒
                 
@@ -853,6 +1595,40 @@
         <div class="welcome-card" id="welcomeCard">
             <h1>Welcome back, <span id="userName">User</span>! 👋</h1>
             <p>Hungry? Browse our delicious menu and order your favorite food.</p>
+            <p id="reviewStatsLine" style="margin-top:0.5rem;font-size:0.95rem;opacity:0.95;"></p>
+        </div>
+
+        <div class="feature-strip" id="trackOrdersSection">
+            <h3>📍 Track your order</h3>
+            <p style="color:#666;font-size:0.9rem;margin-bottom:0.75rem;">
+                Follow preparation, transit, and delivery. Live kitchen view appears only while your order status is <strong>Preparing</strong> (set in Admin → Orders).
+            </p>
+            <div id="trackOrdersPanel">
+                <p style="color:#888;">Loading…</p>
+            </div>
+        </div>
+
+        <div class="feature-strip" id="leaderboardSection">
+            <h3>🏆 Top Clients Leaderboard</h3>
+            <p style="color:#666;font-size:0.9rem;margin-bottom:0.75rem;">
+                Top 3 clients earn free food vouchers and free delivery.
+            </p>
+            <div id="leaderboardMyReward" style="margin:0 0 10px;font-size:0.88rem;color:#5c4d9e;font-weight:600;"></div>
+            <div class="leaderboard-grid" id="leaderboardGrid">
+                <p style="grid-column:1/-1;color:#888;">Loading leaderboard…</p>
+            </div>
+        </div>
+
+        <div class="feature-strip" id="recoSection" style="display:none;">
+            <h3>✨ For you</h3>
+            <p style="color:#666;font-size:0.9rem;margin-bottom:0.75rem;">Based on your tastes and recent orders.</p>
+            <div class="reco-grid" id="recoGrid"></div>
+        </div>
+
+        <div class="feature-strip" id="ordersReviewSection">
+            <h3>⭐ Rate your orders</h3>
+            <p style="color:#666;font-size:0.9rem;margin-bottom:0.75rem;">Tap a row to rate. You can review orders from <strong>pending</strong> through <strong>delivered</strong> (not cancelled), including <strong>transit</strong>. Admins move orders through <strong>Preparing → Transit → Delivered</strong> in Admin → Orders.</p>
+            <div id="pendingReviewsList"></div>
         </div>
 
         <!-- Profile Section -->
@@ -895,8 +1671,16 @@
         <div class="cart-items" id="cartItems"></div>
         
         <div class="cart-total">
-            <span>Total:</span>
-            <span id="cartTotal">KSh 0</span>
+            <span>Subtotal:</span>
+            <span id="cartSubtotal">KSh 0</span>
+        </div>
+        <div style="padding: 0 1.5rem 1rem; font-size: 0.9rem;">
+            <p style="color:#555;margin:0 0 10px;line-height:1.45;">Tap <strong>⭐ points</strong> in the header to choose dishes to redeem for points (added free — you pay in points at checkout).</p>
+            <div id="cartPointsLine" style="font-size:0.88rem;color:#5c4d9e;font-weight:600;min-height:1.2em;"></div>
+            <div style="margin-top:10px;display:flex;justify-content:space-between;font-weight:600;">
+                <span>Pay with M-Pesa:</span>
+                <span id="cartTotal">KSh 0</span>
+            </div>
         </div>
         
         <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
@@ -905,40 +1689,99 @@
     <!-- Toast Notification -->
     <div class="toast" id="toast"></div>
 
+    <button type="button" class="chat-fab" id="chatFab" title="AI assistant">💬</button>
+    <div class="chat-panel" id="chatPanel">
+        <div class="chat-header">Foodie Assistant</div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Ask about menu, M-Pesa, loyalty…" autocomplete="off">
+            <button type="button" id="chatSend">Send</button>
+        </div>
+    </div>
+
+    <div class="loyalty-rewards-modal" id="loyaltyRewardsModal" onclick="if(event.target === this) closeLoyaltyRewardsModal()">
+        <div class="loyalty-rewards-box" onclick="event.stopPropagation()">
+            <div class="loyalty-rewards-head">
+                <div>
+                    <h3 style="margin:0 0 4px;">Redeem loyalty rewards</h3>
+                    <p id="loyaltyRewardsBalance" style="margin:0;color:#666;font-size:0.9rem;">Your balance: —</p>
+                </div>
+                <button type="button" onclick="closeLoyaltyRewardsModal()" style="padding:6px 12px;border:1px solid #ccc;background:#f5f5f5;border-radius:8px;cursor:pointer;font-size:1.1rem;line-height:1;">×</button>
+            </div>
+            <p style="margin:0 0 10px;font-size:0.88rem;color:#666;">Pick a dish — it is added to your cart at <strong>KSh 0</strong>; points are deducted when you complete the order.</p>
+            <div class="loyalty-reward-grid" id="loyaltyRewardsGrid">
+                <p style="grid-column:1/-1;color:#888;">Loading…</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="review-modal" id="reviewModal" onclick="if (event.target === this) closeReviewModal()">
+        <div class="review-box" onclick="event.stopPropagation()">
+            <h3 style="margin-bottom:12px;">Rate your order</h3>
+            <p id="reviewModalOrder" style="color:#666;font-size:0.9rem;margin-bottom:10px;"></p>
+            <div class="star-row" id="starRow" data-stars="0">☆☆☆☆☆</div>
+            <textarea id="reviewComment" rows="3" style="width:100%;margin-top:10px;padding:8px;border:1px solid #ddd;border-radius:8px;" placeholder="Short comment (optional)"></textarea>
+            <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
+                <button type="button" onclick="closeReviewModal()" style="padding:8px 14px;border:1px solid #ccc;background:#f5f5f5;border-radius:8px;cursor:pointer;">Cancel</button>
+                <button type="button" onclick="submitReview()" style="padding:8px 14px;background:#667eea;color:white;border:none;border-radius:8px;cursor:pointer;">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-modal" id="aboutModal" onclick="if(event.target === this) closeAboutModal()">
+        <div class="about-box" onclick="event.stopPropagation()">
+            <div class="about-head">
+                <div>
+                    <h3 style="margin:0 0 4px;">About Food Delivery</h3>
+                    <p style="margin:0;color:#777;font-size:0.88rem;">Company story, how to use the platform, and operations flow.</p>
+                </div>
+                <button type="button" class="about-close" onclick="closeAboutModal()">Close</button>
+            </div>
+            <p class="about-copy">
+                We are a customer-first delivery organization focused on fast, reliable food fulfillment and smooth digital ordering.
+                Our mission is to connect customers with quality meals, real-time order tracking, loyalty rewards, and transparent support.
+                The videos below explain how users place orders, how administrators manage operations, and how our team delivers from kitchen to doorstep.
+            </p>
+            <div class="about-video-grid" id="aboutVideoGrid"></div>
+        </div>
+    </div>
+
     <!-- Payment Modal -->
     <div class="payment-modal" id="paymentModal" onclick="if(event.target === this) closePaymentModal()">
-        <div class="payment-content">
-            <div class="payment-header">
-                <h2>💳 Payment Required</h2>
-                <p>Please complete payment to proceed with your order</p>
-            </div>
-
-            <div class="payment-info">
-                <div class="payment-info-label">M-Pesa (Safaricom STK push)</div>
-                <p style="font-size: 0.9rem; color: #555; margin-bottom: 1rem;">
-                    Enter the number that receives M-Pesa prompts. You will get a <strong>Lipa na M-Pesa</strong> popup — enter your PIN to pay.
-                </p>
-                <div class="mpesa-phone-row">
-                    <label for="mpesaPhone">Phone number</label>
-                    <input type="tel" class="mpesa-phone-input" id="mpesaPhone" placeholder="07XX XXX XXX or 2547..." autocomplete="tel">
+        <div class="payment-content" onclick="event.stopPropagation()">
+            <div class="payment-content-scroll">
+                <div class="payment-header">
+                    <h2>💳 Payment Required</h2>
+                    <p>Please complete payment to proceed with your order</p>
                 </div>
-                <div class="payment-status waiting" id="mpesaPaymentStatus" style="display: none;"></div>
-                <p class="payment-till-note">
-                    Manual pay still available: send to <strong>0712919229</strong> if STK is unavailable — use Pay with M-Pesa after paying so we can record your order.
-                </p>
-            </div>
 
-            <div class="order-summary" id="orderSummary">
-                <!-- Order summary will be populated here -->
-            </div>
+                <div class="payment-info">
+                    <div class="payment-info-label">M-Pesa (Safaricom STK push)</div>
+                    <p style="font-size: 0.9rem; color: #555; margin-bottom: 1rem;">
+                        Enter the number that receives M-Pesa prompts. You will get a <strong>Lipa na M-Pesa</strong> popup — enter your PIN to pay.
+                    </p>
+                    <div class="mpesa-phone-row">
+                        <label for="mpesaPhone">Phone number</label>
+                        <input type="tel" class="mpesa-phone-input" id="mpesaPhone" placeholder="07XX XXX XXX or 2547..." autocomplete="tel">
+                    </div>
+                    <div class="payment-status waiting" id="mpesaPaymentStatus" style="display: none;"></div>
+                    <p class="payment-till-note">
+                        Manual pay still available: send to <strong>0712919229</strong> if STK is unavailable — use Pay with M-Pesa after paying so we can record your order.
+                    </p>
+                </div>
 
-            <div class="payment-instructions">
-                <h3>📱 How STK push works</h3>
-                <ol>
-                    <li>Tap <strong>Pay with M-Pesa</strong> — Safaricom Daraja sends a payment request to your phone.</li>
-                    <li>When the prompt appears, confirm the amount and enter your M-Pesa PIN.</li>
-                    <li>When payment succeeds, your order is placed automatically.</li>
-                </ol>
+                <div class="order-summary" id="orderSummary">
+                    <!-- Order summary will be populated here -->
+                </div>
+
+                <div class="payment-instructions">
+                    <h3>📱 How STK push works</h3>
+                    <ol>
+                        <li>Tap <strong>Pay with M-Pesa</strong> — Safaricom Daraja sends a payment request to your phone.</li>
+                        <li>When the prompt appears, confirm the amount and enter your M-Pesa PIN.</li>
+                        <li>When payment succeeds, your order is placed automatically.</li>
+                    </ol>
+                </div>
             </div>
 
             <div class="payment-actions">
@@ -950,7 +1793,70 @@
 
     <script>
         // State management
-        const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000' : window.location.origin;
+        /** Backend URL: Live Server (e.g. :5500) cannot serve /api — use port 3000. Override: localStorage.foodDeliveryApiBase or <meta name="api-base" content="https://..."> */
+        function resolveFoodDeliveryApiBase() {
+            const meta = document.querySelector('meta[name="api-base"]');
+            if (meta && meta.content && meta.content.trim()) {
+                return meta.content.trim().replace(/\/$/, '');
+            }
+            try {
+                const stored = localStorage.getItem('foodDeliveryApiBase');
+                if (stored && stored.trim()) return stored.trim().replace(/\/$/, '');
+            } catch (_) {}
+            if (window.location.protocol === 'file:') return 'http://localhost:3000';
+            const host = window.location.hostname;
+            const port = window.location.port;
+            const loopback =
+                host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host === '::1';
+            if (port === '3000' || (port === '' && loopback)) {
+                return window.location.origin;
+            }
+            if (loopback) {
+                const h = host === '[::1]' || host === '::1' ? '127.0.0.1' : host;
+                return `http://${h}:3000`;
+            }
+            return window.location.origin;
+        }
+        const API_BASE = resolveFoodDeliveryApiBase();
+        /** Free ngrok can inject an HTML warning page unless this header is sent on API requests. */
+        function apiFetchHeaders(jsonBody) {
+            const h = {};
+            if (jsonBody) h['Content-Type'] = 'application/json';
+            if (/ngrok-free\.(app|dev)$/i.test(window.location.hostname) || /\.ngrok\.io$/i.test(window.location.hostname)) {
+                h['ngrok-skip-browser-warning'] = 'true';
+            }
+            return h;
+        }
+        function isVideoMediaUrl(url) {
+            if (!url || typeof url !== 'string') return false;
+            const u = url.split(/[?#]/)[0].toLowerCase();
+            return /\.(mp4|webm|mov|m4v)$/.test(u);
+        }
+
+        function resolveMenuMediaUrl(raw) {
+            if (!raw) return '';
+            const s = String(raw);
+            if (s.startsWith('http://') || s.startsWith('https://')) return s;
+            return `${API_BASE}${s.startsWith('/') ? '' : '/'}${s}`;
+        }
+
+        async function parseJsonResponse(res) {
+            const text = await res.text();
+            if (!text.trim()) {
+                throw new Error(`Empty response (HTTP ${res.status}). If using ngrok, try again or check the server log.`);
+            }
+            const trimmed = text.trim();
+            if (/^\s*</i.test(trimmed)) {
+                throw new Error(
+                    'Order tracking could not load: the API returned a web page instead of JSON. Open the dashboard from your Node app (e.g. http://localhost:3000/dashboard.html), restart the backend, or deploy the latest server so Vercel path rewriting works.'
+                );
+            }
+            try {
+                return JSON.parse(text);
+            } catch {
+                throw new Error(`Invalid response from server (HTTP ${res.status}). Check that the API is running.`);
+            }
+        }
         let menuItems = [];
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
         let currentCategory = 'all';
@@ -958,6 +1864,755 @@
         let mpesaPollTimer = null;
         let paymentTotalKes = 0;
         let mpesaPollDeadline = 0;
+        let menuSyncTimer = null;
+        let reviewOrderId = null;
+        let reviewStars = 0;
+        let chatHistory = [];
+        let orderTrackPollTimer = null;
+        let orderTrackCountdownTimer = null;
+        let trackEtaDeadlineMs = null;
+        let trackCountdownIsTerminal = false;
+        let trackTerminalMessage = '';
+
+        function getLocalDemoMenuItems() {
+            return [
+                { id: 9001, name: 'Nyama Choma', description: 'Popular with nearby orders', price: 450, compare_at_price: null, image_url: '', category: 'Main Course', status: 'Available' },
+                { id: 9002, name: 'Pilau Beef', description: 'Spiced rice with tender beef', price: 380, compare_at_price: null, image_url: '', category: 'Main Course', status: 'Available' },
+                { id: 9003, name: 'Chicken Biryani', description: 'Aromatic biryani with tender chicken', price: 520, compare_at_price: null, image_url: '', category: 'Main Course', status: 'Available' },
+                { id: 9004, name: 'Ugali & Tilapia', description: 'Classic ugali with fried tilapia', price: 600, compare_at_price: null, image_url: '', category: 'Main Course', status: 'Available' },
+                { id: 9005, name: 'Chips Masala', description: 'Fries tossed in tangy masala sauce', price: 260, compare_at_price: null, image_url: '', category: 'Snacks', status: 'Available' },
+                { id: 9006, name: 'Samosa', description: 'Crispy snack with spicy filling', price: 70, compare_at_price: null, image_url: '', category: 'Snacks', status: 'Available' },
+                { id: 9007, name: 'Mandazi', description: 'Freshly made soft mandazi', price: 80, compare_at_price: null, image_url: '', category: 'Snacks', status: 'Available' },
+                { id: 9008, name: 'Hot Tea', description: 'Pairs well with your usual picks', price: 80, compare_at_price: null, image_url: '', category: 'Drinks', status: 'Available' },
+                { id: 9009, name: 'Fresh Juice', description: 'Seasonal fruit blend', price: 150, compare_at_price: null, image_url: '', category: 'Drinks', status: 'Available' },
+                { id: 9010, name: 'Soda 500ml', description: 'Chilled soft drink', price: 100, compare_at_price: null, image_url: '', category: 'Drinks', status: 'Available' },
+                { id: 9011, name: 'Chocolate Cake', description: 'Rich slice for dessert', price: 220, compare_at_price: null, image_url: '', category: 'Desserts', status: 'Available' },
+                { id: 9012, name: 'Ice Cream Sundae', description: 'Vanilla sundae with toppings', price: 240, compare_at_price: null, image_url: '', category: 'Desserts', status: 'Available' },
+                { id: 9013, name: 'Pancake Stack', description: 'Fluffy pancakes with syrup', price: 260, compare_at_price: null, image_url: '', category: 'Breakfast', status: 'Available' },
+                { id: 9014, name: 'Spanish Omelette', description: 'Three-egg omelette with veggies', price: 230, compare_at_price: null, image_url: '', category: 'Breakfast', status: 'Available' },
+                { id: 9015, name: 'Fruit Salad', description: 'Fresh seasonal fruit bowl', price: 180, compare_at_price: null, image_url: '', category: 'Desserts', status: 'Available' },
+            ];
+        }
+
+        function cartSubtotalAmount() {
+            return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        }
+
+        function cartLoyaltyPointsTotal() {
+            return cart.reduce((sum, item) => {
+                if (!item.loyaltyRedeem) return sum;
+                const ppu = Number(item.loyaltyPointsPerUnit) || 0;
+                return sum + ppu * item.quantity;
+            }, 0);
+        }
+
+        function refreshCartTotals() {
+            const sub = cartSubtotalAmount();
+            const pts = cartLoyaltyPointsTotal();
+            const subEl = document.getElementById('cartSubtotal');
+            const totEl = document.getElementById('cartTotal');
+            const ptsLine = document.getElementById('cartPointsLine');
+            if (subEl) subEl.textContent = `KSh ${sub.toFixed(2)}`;
+            if (totEl) totEl.textContent = `KSh ${sub.toFixed(2)}`;
+            if (ptsLine) {
+                ptsLine.textContent =
+                    pts > 0 ? `Loyalty rewards in cart: ${pts} pts (deducted when you place the order)` : '';
+            }
+        }
+
+        function setPaymentModalLoyaltyOnlyMode(on) {
+            const modal = document.getElementById('paymentModal');
+            const row = modal?.querySelector('.mpesa-phone-row');
+            const till = modal?.querySelector('.payment-till-note');
+            const instr = modal?.querySelector('.payment-instructions');
+            const lbl = modal?.querySelector('.payment-info-label');
+            const infoP = modal?.querySelector('.payment-info > p');
+            if (modal) modal.dataset.loyaltyOnly = on ? '1' : '';
+            if (on) {
+                if (row) row.style.display = 'none';
+                if (till) till.style.display = 'none';
+                if (instr) instr.style.display = 'none';
+                if (lbl) lbl.textContent = 'Loyalty reward order';
+                if (infoP)
+                    infoP.textContent =
+                        'No M-Pesa payment is needed. Confirm to place your order and spend the points shown in the summary.';
+            } else {
+                if (row) row.style.display = '';
+                if (till) till.style.display = '';
+                if (instr) instr.style.display = '';
+                if (lbl) lbl.textContent = 'M-Pesa (Safaricom STK push)';
+                if (infoP)
+                    infoP.innerHTML =
+                        'Enter the number that receives M-Pesa prompts. You will get a <strong>Lipa na M-Pesa</strong> popup — enter your PIN to pay.';
+            }
+        }
+
+        /** Same formula as backend loyaltyPointsCostForMenuPrice — used if API catalog routes fail */
+        function loyaltyPointsCostClient(price) {
+            const p = Number(price);
+            if (!Number.isFinite(p) || p <= 0) return 50;
+            return Math.max(30, Math.round(p * 2.2));
+        }
+
+        function menuItemsToLoyaltyRewards(items) {
+            if (!Array.isArray(items)) return [];
+            return items.map((it) => ({
+                id: it.id,
+                name: it.name,
+                description: it.description,
+                price: it.price,
+                compare_at_price: it.compare_at_price,
+                image_url: it.image_url,
+                category: it.category,
+                pointsCost: loyaltyPointsCostClient(it.price),
+            }));
+        }
+
+        async function openLoyaltyRewardsModal() {
+            if (!userData) return;
+            await refreshLoyaltyNav();
+            const modal = document.getElementById('loyaltyRewardsModal');
+            const grid = document.getElementById('loyaltyRewardsGrid');
+            const balEl = document.getElementById('loyaltyRewardsBalance');
+            const bal = Number(userData.loyaltyPoints ?? 0);
+            if (balEl) balEl.textContent = `Your balance: ⭐ ${bal} pts`;
+            modal.classList.add('open');
+            grid.innerHTML = '<p style="grid-column:1/-1;color:#888;">Loading…</p>';
+            const fetchOpts = { headers: apiFetchHeaders(false), cache: 'no-store' };
+            const tryUrls = [
+                `${API_BASE}/api/loyalty-rewards`,
+                `${API_BASE}/api/menu-items/loyalty-catalog`,
+                `${API_BASE}/api/loyalty/rewards`,
+                `${API_BASE}/api/menu-items`,
+            ];
+            let rewards = null;
+            let lastProblem = '';
+            try {
+                for (const url of tryUrls) {
+                    let r;
+                    try {
+                        r = await fetch(url, fetchOpts);
+                    } catch (netErr) {
+                        lastProblem = String(netErr.message || netErr);
+                        continue;
+                    }
+                    const raw = await r.text();
+                    let d = {};
+                    try {
+                        d = raw.trim() ? JSON.parse(raw) : {};
+                    } catch {
+                        lastProblem = `HTTP ${r.status} (not JSON)`;
+                        continue;
+                    }
+                    if (!r.ok || !d.success) {
+                        lastProblem = `HTTP ${r.status}: ${(d.message || raw.slice(0, 120) || '').replace(/</g, '')}`;
+                        continue;
+                    }
+                    if (Array.isArray(d.rewards) && d.rewards.length > 0) {
+                        rewards = d.rewards;
+                        break;
+                    }
+                    if (Array.isArray(d.items) && d.items.length > 0) {
+                        rewards = menuItemsToLoyaltyRewards(d.items);
+                        break;
+                    }
+                }
+                if (!rewards || rewards.length === 0) {
+                    grid.innerHTML = `<p style="grid-column:1/-1;color:#c62828;">Could not load redeem options. ${(lastProblem || 'No items').replace(/</g, '')}</p><p style="grid-column:1/-1;color:#666;font-size:0.9rem;">Hard-refresh this page (Ctrl+F5). In the backend folder run <code>node server.js</code> and check the console for: <strong>Loyalty catalog: GET /api/loyalty-rewards…</strong></p>`;
+                    return;
+                }
+                grid.innerHTML = rewards
+                    .map((rw) => {
+                        const nm = JSON.stringify(rw.name);
+                        const cost = Number(rw.pointsCost) || 0;
+                        const can = bal >= cost;
+                        return `
+                        <div class="loyalty-reward-card">
+                            <strong>${escapeHtml(rw.name)}</strong>
+                            <div class="pts">${cost} pts</div>
+                            <div style="font-size:0.8rem;color:#777;">Menu KSh ${parseFloat(rw.price).toFixed(2)}</div>
+                            <button type="button" ${can ? '' : 'disabled'} onclick="addLoyaltyRewardToCart(${rw.id}, ${nm}, ${cost})">Add to cart</button>
+                        </div>`;
+                    })
+                    .join('');
+            } catch (e) {
+                grid.innerHTML = `<p style="grid-column:1/-1;color:#c62828;">Network error: ${String(e.message || e).replace(/</g, '')}. Is the API on the same host/port as this page?</p>`;
+            }
+        }
+
+        function closeLoyaltyRewardsModal() {
+            document.getElementById('loyaltyRewardsModal').classList.remove('open');
+        }
+
+        function addLoyaltyRewardToCart(id, name, pointsPerUnit) {
+            const bal = Number(userData?.loyaltyPoints ?? 0);
+            if (pointsPerUnit > bal) {
+                showToast('Not enough points for that reward', 'error');
+                return;
+            }
+            const existingItem = cart.find((item) => item.id === id && item.loyaltyRedeem);
+            if (existingItem) {
+                if (cartLoyaltyPointsTotal() + pointsPerUnit > bal) {
+                    showToast('Not enough points for another one', 'error');
+                    return;
+                }
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id,
+                    name,
+                    price: 0,
+                    quantity: 1,
+                    loyaltyRedeem: true,
+                    loyaltyPointsPerUnit: pointsPerUnit,
+                });
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartDisplay();
+            showToast(`${name} added as a loyalty reward 🎁`, 'success');
+            closeLoyaltyRewardsModal();
+        }
+
+        function onOrderPlacedSuccess(data, method) {
+            if (data.loyaltyPointsBalance != null) {
+                userData.loyaltyPoints = data.loyaltyPointsBalance;
+                sessionStorage.setItem('user', JSON.stringify(userData));
+            }
+            displayUserInfo();
+            refreshLoyaltyNav();
+            loadPendingReviews();
+            loadReviewStatsLine();
+            loadLeaderboard();
+            if (data.orderId != null) {
+                sessionStorage.setItem('lastPlacedOrderId', String(data.orderId));
+            }
+            loadOrderTracking();
+            showToast('Order placed successfully! 🎉', 'success');
+            cart = [];
+            localStorage.removeItem('cart');
+            updateCartDisplay();
+            closePaymentModal();
+            toggleCart();
+            setTimeout(() => {
+                const ptsLine =
+                    data.pointsEarned != null
+                        ? `\nPoints earned: ${data.pointsEarned}${
+                              data.loyaltyRedeemed ? ` · Points used: ${data.loyaltyRedeemed}` : ''
+                          }`
+                        : '';
+                alert(
+                    `Order #${data.orderId} placed successfully!\nTotal: KSh ${data.totalAmount}\nPayment: ${method}${ptsLine}\n\nThank you for ordering!`
+                );
+            }, 400);
+        }
+
+        async function refreshLoyaltyNav() {
+            const el = document.getElementById('loyaltyNav');
+            if (!el || !userData) return;
+            try {
+                const r = await fetch(`${API_BASE}/api/loyalty/${userData.id}`, {
+                    headers: apiFetchHeaders(false),
+                });
+                const d = await r.json();
+                if (d.success) {
+                    userData.loyaltyPoints = d.loyaltyPoints;
+                    sessionStorage.setItem('user', JSON.stringify(userData));
+                    el.textContent = `⭐ ${d.loyaltyPoints} pts`;
+                }
+            } catch (e) {
+                const pts = userData.loyaltyPoints ?? 0;
+                el.textContent = `⭐ ${pts} pts`;
+            }
+        }
+
+        async function loadReviewStatsLine() {
+            const line = document.getElementById('reviewStatsLine');
+            if (!line) return;
+            try {
+                const r = await fetch(`${API_BASE}/api/reviews/stats`, { headers: apiFetchHeaders(false) });
+                const d = await r.json();
+                if (d.success && d.count > 0 && d.averageStars != null) {
+                    line.textContent = `Community rating: ★ ${Number(d.averageStars).toFixed(1)} (${d.count} reviews)`;
+                } else {
+                    line.textContent = 'Be the first to leave a review after your delivery!';
+                }
+            } catch {
+                line.textContent = '';
+            }
+        }
+
+        async function loadLeaderboard() {
+            const grid = document.getElementById('leaderboardGrid');
+            const myReward = document.getElementById('leaderboardMyReward');
+            if (!grid || !myReward || !userData) return;
+            try {
+                const r = await fetch(
+                    `${API_BASE}/api/leaderboard/customers?currentUserId=${encodeURIComponent(userData.id)}`,
+                    { headers: apiFetchHeaders(false) }
+                );
+                const d = await r.json();
+                if (!d.success || !Array.isArray(d.winners) || d.winners.length === 0) {
+                    grid.innerHTML =
+                        '<p style="grid-column:1/-1;color:#888;">No leaderboard data yet. Place orders to get ranked.</p>';
+                    myReward.textContent = '';
+                    return;
+                }
+
+                myReward.textContent = d.currentUserReward
+                    ? `🎉 You are rank #${d.currentUserReward.rank}: free food voucher KSh ${d.currentUserReward.freeFoodVoucherKes} + free delivery.`
+                    : 'Keep ordering to enter the top 3 rewards list.';
+
+                grid.innerHTML = d.winners
+                    .map((w) => {
+                        const medal = w.rank === 1 ? '🥇' : w.rank === 2 ? '🥈' : '🥉';
+                        const avg = Number(w.avgRating || 0).toFixed(1);
+                        return `
+                        <div class="leaderboard-card">
+                            <div class="leaderboard-rank">${medal} #${w.rank}</div>
+                            <div style="margin-top:4px;font-weight:600;">${escapeHtml(w.name || 'Client')}</div>
+                            <div style="margin-top:4px;color:#667;">Orders: ${Number(w.ordersCount || 0)}</div>
+                            <div style="color:#667;">Spent: KSh ${Number(w.totalSpent || 0).toFixed(2)}</div>
+                            <div style="color:#667;">Avg rating: ★ ${avg}</div>
+                            <div class="leaderboard-perk">Reward: Free food voucher KSh ${Number(
+                                w.perks?.freeFoodVoucherKes || 0
+                            )} + free delivery</div>
+                        </div>`;
+                    })
+                    .join('');
+            } catch {
+                grid.innerHTML =
+                    '<p style="grid-column:1/-1;color:#c62828;">Could not load leaderboard right now.</p>';
+                myReward.textContent = '';
+            }
+        }
+
+        async function loadRecommendations() {
+            const sec = document.getElementById('recoSection');
+            const grid = document.getElementById('recoGrid');
+            if (!sec || !grid || !userData) return;
+            try {
+                const r = await fetch(`${API_BASE}/api/ai/recommendations/${userData.id}`, {
+                    headers: apiFetchHeaders(false),
+                });
+                const d = await r.json();
+                if (!d.success || !d.recommendations?.length) {
+                    sec.style.display = 'none';
+                    return;
+                }
+                sec.style.display = 'block';
+                grid.innerHTML = d.recommendations
+                    .map((it) => {
+                        const safeName = String(it.name || '').replace(/</g, '');
+                        const safeReason = String(it.reason || 'Recommended').replace(/</g, '');
+                        const priceNum = Number(it.price);
+                        const safePrice = Number.isFinite(priceNum) ? priceNum : 0;
+                        const rawId = Number(it.id);
+                        const safeId = Number.isFinite(rawId) ? rawId : '';
+                        return `
+                    <div class="reco-card">
+                        <strong>${safeName}</strong>
+                        <div style="color:#667eea;font-weight:600;margin-top:4px;">KSh ${safePrice.toFixed(2)}</div>
+                        <div class="why">${safeReason}</div>
+                        <button type="button" class="add-to-cart reco-add-btn" style="margin-top:8px;width:100%;" data-food-id="${safeId}" data-food-name="${safeName}" data-food-price="${safePrice}">+ Add</button>
+                    </div>`;
+                    })
+                    .join('');
+                grid.querySelectorAll('.reco-add-btn').forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        const name = btn.dataset.foodName || 'Item';
+                        const price = Number(btn.dataset.foodPrice);
+                        let id = Number(btn.dataset.foodId);
+                        if (!Number.isFinite(id) || id <= 0) {
+                            const match = menuItems.find(
+                                (m) => String(m.name || '').toLowerCase() === String(name).toLowerCase()
+                            );
+                            id = Number(match?.id);
+                        }
+                        if (!Number.isFinite(id) || id <= 0) {
+                            showToast('Could not add this item right now. Refresh and try again.', 'error');
+                            return;
+                        }
+                        addToCart(id, name, Number.isFinite(price) ? price : 0);
+                    });
+                });
+            } catch {
+                sec.style.display = 'none';
+            }
+        }
+
+        async function loadPendingReviews() {
+            const box = document.getElementById('pendingReviewsList');
+            if (!box || !userData) return;
+            try {
+                const r = await fetch(`${API_BASE}/api/reviews/pending/${userData.id}`, {
+                    headers: apiFetchHeaders(false),
+                });
+                const d = await r.json();
+                if (!d.success || !d.pending?.length) {
+                    box.innerHTML = '<p style="color:#888;font-size:0.9rem;">No deliveries waiting for a review. Order something delicious!</p>';
+                    return;
+                }
+                box.innerHTML = d.pending
+                    .map((o) => {
+                        const oid = Number(o.order_id);
+                        const amt = parseFloat(o.total_amount).toFixed(2);
+                        const st = String(o.status || '').replace(/</g, '');
+                        return `
+                    <button type="button" class="pending-review"
+                        data-order-id="${oid}"
+                        data-amount="${amt}"
+                        aria-label="Rate order ${oid}">
+                        <span><strong>Order #${oid}</strong> · KSh ${amt} · ${new Date(o.created_at).toLocaleDateString()} <span style="color:#888;font-size:0.85rem;">(${st})</span></span>
+                        <span class="rate-chevron" aria-hidden="true">Rate →</span>
+                    </button>`;
+                    })
+                    .join('');
+                box.querySelectorAll('.pending-review').forEach((row) => {
+                    row.addEventListener('click', () => {
+                        openReviewModal(Number(row.dataset.orderId), row.dataset.amount || '0.00');
+                    });
+                    row.addEventListener('keydown', (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            openReviewModal(Number(row.dataset.orderId), row.dataset.amount || '0.00');
+                        }
+                    });
+                });
+            } catch {
+                box.innerHTML = '';
+            }
+        }
+
+        function openReviewModal(orderId, amountStr) {
+            reviewOrderId = orderId;
+            reviewStars = 0;
+            document.getElementById('reviewModalOrder').textContent = `Order #${orderId} · KSh ${amountStr}`;
+            document.getElementById('reviewComment').value = '';
+            renderStarRow(0);
+            document.getElementById('reviewModal').classList.add('open');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.remove('open');
+            reviewOrderId = null;
+        }
+
+        function renderStarRow(n) {
+            reviewStars = n;
+            const row = document.getElementById('starRow');
+            row.innerHTML = [1, 2, 3, 4, 5]
+                .map(
+                    (i) =>
+                        `<span data-s="${i}" style="cursor:pointer;color:${i <= n ? '#ffc107' : '#ddd'}">★</span>`
+                )
+                .join('');
+            row.querySelectorAll('span').forEach((s) => {
+                s.onclick = () => renderStarRow(+s.dataset.s);
+            });
+        }
+
+        async function submitReview() {
+            if (!reviewOrderId || reviewStars < 1) {
+                showToast('Tap the stars to rate 1–5', 'error');
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/api/reviews`, {
+                    method: 'POST',
+                    headers: apiFetchHeaders(true),
+                    body: JSON.stringify({
+                        userId: userData.id,
+                        orderId: reviewOrderId,
+                        stars: reviewStars,
+                        comment: document.getElementById('reviewComment').value,
+                    }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.success) {
+                    showToast(data.message || 'Could not save review', 'error');
+                    return;
+                }
+                showToast('Thanks for your review!', 'success');
+                closeReviewModal();
+                loadPendingReviews();
+                loadReviewStatsLine();
+            } catch (e) {
+                showToast(e.message || 'Error', 'error');
+            }
+        }
+
+        function toggleChat() {
+            document.getElementById('chatPanel').classList.toggle('open');
+        }
+
+        const ABOUT_VIDEOS = [
+            {
+                title: 'How Customers Use the System',
+                embedUrl: 'https://player.vimeo.com/video/76979871',
+            },
+            {
+                title: 'Admin & Order Workflow',
+                embedUrl: 'https://player.vimeo.com/video/22439234',
+            },
+            {
+                title: 'How the Organization Operates',
+                embedUrl: 'https://player.vimeo.com/video/32708463',
+            },
+        ];
+
+        function renderAboutVideos() {
+            const grid = document.getElementById('aboutVideoGrid');
+            if (!grid) return;
+            grid.innerHTML = ABOUT_VIDEOS.map((v) => `
+                <div class="about-video-card">
+                    <div class="about-video-title">${escapeHtml(v.title)}</div>
+                    <iframe
+                        src="${v.embedUrl}"
+                        title="${escapeHtml(v.title)}"
+                        loading="lazy"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            `).join('');
+        }
+
+        function openAboutModal() {
+            renderAboutVideos();
+            document.getElementById('aboutModal').classList.add('open');
+        }
+
+        function closeAboutModal() {
+            document.getElementById('aboutModal').classList.remove('open');
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chatInput');
+            const msg = (input.value || '').trim();
+            if (!msg) return;
+            input.value = '';
+            const box = document.getElementById('chatMessages');
+            box.innerHTML += `<div class="chat-bubble user">${escapeHtml(msg)}</div>`;
+            box.scrollTop = box.scrollHeight;
+            chatHistory.push({ role: 'user', content: msg });
+            try {
+                const res = await fetch(`${API_BASE}/api/ai/chat`, {
+                    method: 'POST',
+                    headers: apiFetchHeaders(true),
+                    body: JSON.stringify({ message: msg, history: chatHistory.slice(-8) }),
+                });
+                const data = await res.json().catch(() => ({}));
+                const reply = data.reply || 'Sorry, something went wrong.';
+                chatHistory.push({ role: 'assistant', content: reply });
+                box.innerHTML += `<div class="chat-bubble bot">${escapeHtml(reply)}</div>`;
+                box.scrollTop = box.scrollHeight;
+            } catch (e) {
+                box.innerHTML += `<div class="chat-bubble bot">Network error.</div>`;
+            }
+        }
+
+        function escapeHtml(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        function formatDeliveryCountdown(totalSec) {
+            if (totalSec <= 0) {
+                return 'Estimated delivery time reached — your order should arrive any moment.';
+            }
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            if (h > 0) return `About ${h}h ${m}m left until estimated delivery.`;
+            if (m > 0) return `About ${m}m ${s}s left until estimated delivery.`;
+            return `About ${s}s left until estimated delivery.`;
+        }
+
+        function stopOrderTrackPolling() {
+            if (orderTrackPollTimer) {
+                clearInterval(orderTrackPollTimer);
+                orderTrackPollTimer = null;
+            }
+        }
+
+        function stopOrderTrackCountdown() {
+            if (orderTrackCountdownTimer) {
+                clearInterval(orderTrackCountdownTimer);
+                orderTrackCountdownTimer = null;
+            }
+        }
+
+        function updateTrackCountdownEl() {
+            const el = document.getElementById('trackCountdown');
+            if (!el) return;
+            if (trackCountdownIsTerminal) {
+                el.textContent = trackTerminalMessage;
+                return;
+            }
+            if (trackEtaDeadlineMs == null || Number.isNaN(trackEtaDeadlineMs)) {
+                el.textContent = '';
+                return;
+            }
+            const sec = Math.max(0, Math.floor((trackEtaDeadlineMs - Date.now()) / 1000));
+            el.textContent = formatDeliveryCountdown(sec);
+        }
+
+        function startOrderTrackCountdown() {
+            stopOrderTrackCountdown();
+            orderTrackCountdownTimer = setInterval(updateTrackCountdownEl, 1000);
+            updateTrackCountdownEl();
+        }
+
+        function renderOrderTrackDetail(data) {
+            const detail = document.getElementById('trackOrderDetail');
+            if (!detail) return;
+
+            const timelineHtml = (data.timeline || [])
+                .map((step) => {
+                    let cls = 'track-step';
+                    if (step.done) cls += ' done';
+                    if (step.active) cls += ' active';
+                    return `<span class="${cls}">${escapeHtml(step.label)}</span>`;
+                })
+                .join('');
+
+            trackTerminalMessage =
+                data.status === 'delivered'
+                    ? 'Delivered — enjoy your meal!'
+                    : data.status === 'cancelled'
+                      ? 'This order was cancelled.'
+                      : '';
+            trackCountdownIsTerminal =
+                data.status === 'delivered' || data.status === 'cancelled';
+
+            const liveBlock =
+                data.showLive && data.liveVideoUrl
+                    ? `<div class="track-live-header">
+                            <span class="track-live-badge" aria-live="polite"><span class="track-live-dot" aria-hidden="true"></span> Live</span>
+                            <span class="track-live-sub">Kitchen prep stream — washing, cooking, plating</span>
+                        </div>
+                        <div class="track-live-wrap">
+                            <video id="trackPrepVideo" autoplay muted loop playsinline controls></video>
+                            <p class="track-live-caption">You’re watching live prep for this order. Video hides when the order moves to <strong>Transit</strong> or <strong>Delivered</strong>.</p>
+                        </div>`
+                    : `<p class="track-no-live">${
+                          data.status === 'preparing'
+                              ? 'Live prep feed is not available right now.'
+                              : 'The <strong>Live</strong> kitchen view appears only while Admin has set this order to <strong>Preparing</strong>.'
+                      }</p>`;
+
+            detail.innerHTML = `
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:6px;">
+                    <span class="track-status-chip">Order #${data.orderId}</span>
+                    <span class="track-status-chip">${escapeHtml(data.status)}</span>
+                </div>
+                <div class="track-timeline" role="list">${timelineHtml}</div>
+                <div class="track-countdown" id="trackCountdown"></div>
+                ${liveBlock}
+            `;
+
+            if (trackCountdownIsTerminal) {
+                trackEtaDeadlineMs = null;
+                const el = document.getElementById('trackCountdown');
+                if (el) el.textContent = trackTerminalMessage;
+            } else {
+                trackEtaDeadlineMs = new Date(data.estimatedDeliveryAt).getTime();
+                startOrderTrackCountdown();
+            }
+
+            const vid = document.getElementById('trackPrepVideo');
+            if (vid) {
+                if (data.showLive && data.liveVideoUrl) {
+                    vid.src = data.liveVideoUrl;
+                    vid.play().catch(() => {});
+                } else {
+                    vid.removeAttribute('src');
+                    vid.load();
+                }
+            }
+        }
+
+        async function refreshOrderTrackDetail(orderId) {
+            const detail = document.getElementById('trackOrderDetail');
+            if (!detail || !orderId || !userData) return;
+            try {
+                stopOrderTrackCountdown();
+                const r = await fetch(
+                    `${API_BASE}/api/orders/track?orderId=${encodeURIComponent(orderId)}&userId=${encodeURIComponent(userData.id)}`,
+                    { headers: apiFetchHeaders(false) }
+                );
+                const data = await parseJsonResponse(r);
+                if (!data.success) throw new Error(data.message || 'Track failed');
+                renderOrderTrackDetail(data);
+            } catch (e) {
+                detail.innerHTML = `<p class="track-empty">${escapeHtml(e.message || 'Could not refresh tracking.')}</p>`;
+            }
+        }
+
+        async function loadOrderTracking() {
+            const panel = document.getElementById('trackOrdersPanel');
+            if (!panel || !userData) return;
+            stopOrderTrackPolling();
+            stopOrderTrackCountdown();
+            try {
+                const r = await fetch(`${API_BASE}/api/orders/user/${encodeURIComponent(userData.id)}`, {
+                    headers: apiFetchHeaders(false),
+                });
+                const d = await parseJsonResponse(r);
+                if (!d.success || !Array.isArray(d.orders)) {
+                    panel.innerHTML = '<p class="track-empty">Could not load orders.</p>';
+                    return;
+                }
+                const active = d.orders.filter(
+                    (o) => !['delivered', 'cancelled'].includes(String(o.status || '').toLowerCase())
+                );
+                if (active.length === 0) {
+                    panel.innerHTML =
+                        '<p class="track-empty">No active orders. When you place an order, tracking and countdown appear here.</p>';
+                    return;
+                }
+
+                let sel = sessionStorage.getItem('lastPlacedOrderId');
+                if (!active.some((o) => String(o.order_id) === String(sel))) {
+                    sel = String(active[0].order_id);
+                }
+
+                const pickOpts = active
+                    .map(
+                        (o) =>
+                            `<option value="${Number(o.order_id)}" ${String(o.order_id) === String(sel) ? 'selected' : ''}>#${Number(o.order_id)} · ${escapeHtml(String(o.status || ''))} · KSh ${parseFloat(o.total_amount).toFixed(2)}</option>`
+                    )
+                    .join('');
+
+                const picker =
+                    active.length > 1
+                        ? `<div class="track-order-row"><label for="trackOrderPick">Track order</label><select id="trackOrderPick">${pickOpts}</select></div>`
+                        : '';
+
+                panel.innerHTML = `${picker}<div id="trackOrderDetail"></div>`;
+
+                const pickEl = document.getElementById('trackOrderPick');
+                if (pickEl) {
+                    pickEl.addEventListener('change', () => {
+                        sessionStorage.setItem('lastPlacedOrderId', pickEl.value);
+                        refreshOrderTrackDetail(pickEl.value);
+                    });
+                }
+
+                await refreshOrderTrackDetail(sel);
+                orderTrackPollTimer = setInterval(() => {
+                    const pick = document.getElementById('trackOrderPick');
+                    const id =
+                        (pick && pick.value) ||
+                        sessionStorage.getItem('lastPlacedOrderId') ||
+                        sel;
+                    if (id) refreshOrderTrackDetail(id);
+                }, 5000);
+            } catch {
+                panel.innerHTML = '<p class="track-empty">Could not load tracking.</p>';
+            }
+        }
 
         // Check authentication
         function checkAuth() {
@@ -971,13 +2626,19 @@
         }
 
         // Initialize page
-        function init() {
+        async function init() {
             if (!checkAuth()) return;
-            
+            await refreshLoyaltyNav();
             displayUserInfo();
-            loadMenuItems();
+            loadMenuItems({ silent: false, keepCategory: false });
             updateCartDisplay();
             setupCategoryButtons();
+            startMenuSync();
+            loadReviewStatsLine();
+            loadLeaderboard();
+            loadRecommendations();
+            loadPendingReviews();
+            loadOrderTracking();
         }
 
         // Display user info
@@ -1007,30 +2668,74 @@
                     <label>Address</label>
                     <div class="value">${userData.address}</div>
                 </div>
+                <div class="info-item">
+                    <label>Loyalty points</label>
+                    <div class="value">⭐ ${userData.loyaltyPoints ?? 0} pts</div>
+                </div>
                 ${userData.isAdmin ? '<div class="info-item"><label>Role</label><div class="value">👑 Administrator</div></div>' : ''}
             `;
         }
 
         // Load menu items from server
-        async function loadMenuItems() {
+        async function loadMenuItems(options = {}) {
+            const { silent = false, keepCategory = true } = options;
             try {
-                document.getElementById('loading').style.display = 'block';
-                document.getElementById('menuGrid').innerHTML = '';
+                if (!silent) {
+                    document.getElementById('loading').style.display = 'block';
+                    document.getElementById('menuGrid').innerHTML = '';
+                }
                 
-                const response = await fetch(`${API_BASE}/api/menu-items`);
-                const data = await response.json();
+                const response = await fetch(`${API_BASE}/api/menu-items`, {
+                    cache: 'no-store',
+                    headers: apiFetchHeaders(false),
+                });
+                let data = null;
+                try {
+                    data = await parseJsonResponse(response);
+                } catch {
+                    data = null;
+                }
                 
                 if (data.success) {
-                    menuItems = data.items;
-                    displayMenuItems(menuItems);
+                    const nextItems = dedupeMenuItemsByName(data.items || []);
+                    const changed = JSON.stringify(nextItems) !== JSON.stringify(menuItems);
+                    menuItems = nextItems;
                     setupCategories();
+                    if (keepCategory) {
+                        filterByCategory(currentCategory);
+                    } else {
+                        displayMenuItems(menuItems);
+                    }
+                    if (silent && changed) {
+                        showToast('Menu updated from admin changes', 'success');
+                    }
+                } else {
+                    throw new Error((data && data.message) || 'Menu API error');
                 }
             } catch (error) {
                 console.error('Error loading menu:', error);
-                showToast('Error loading menu. Please refresh.', 'error');
+                const fallbackItems = dedupeMenuItemsByName(getLocalDemoMenuItems());
+                menuItems = fallbackItems;
+                setupCategories();
+                if (keepCategory) {
+                    filterByCategory(currentCategory);
+                } else {
+                    displayMenuItems(menuItems);
+                }
+                if (!silent) {
+                    showToast('Database is offline. Showing demo menu items.', 'warning');
+                }
             } finally {
-                document.getElementById('loading').style.display = 'none';
+                if (!silent) {
+                    document.getElementById('loading').style.display = 'none';
+                }
             }
+        }
+
+        function startMenuSync() {
+            if (menuSyncTimer) clearInterval(menuSyncTimer);
+            // Poll so frontend reflects admin add/delete without manual refresh.
+            menuSyncTimer = setInterval(() => loadMenuItems({ silent: true, keepCategory: true }), 10000);
         }
 
         // Setup category buttons from actual data
@@ -1077,6 +2782,109 @@
             displayMenuItems(filtered);
         }
 
+        /** Whole KSh amounts without “.00”; otherwise two decimals */
+        function formatMenuKshAmount(value) {
+            const x = parseFloat(value);
+            if (!Number.isFinite(x)) return '';
+            if (Math.abs(x - Math.round(x)) < 1e-6) return String(Math.round(x));
+            return x.toFixed(2);
+        }
+
+        function getCompareAtFromMenuItem(item) {
+            if (!item || typeof item !== 'object') return undefined;
+            const found = Object.keys(item).find((k) => String(k).toLowerCase() === 'compare_at_price');
+            if (found !== undefined) return item[found];
+            return item.compareAtPrice;
+        }
+
+        function fallbackImageForMenuItem(item) {
+            const name = String(item?.name || '').toLowerCase();
+            const category = String(item?.category || '').toLowerCase();
+            const itemId = Number(item?.id) || 0;
+            const byName = {
+                'nyama choma': 'https://images.unsplash.com/photo-1529692236671-f1de5e376f1b?w=900',
+                'pilau beef': 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=900',
+                'fish fillet': 'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=900',
+                'chicken biryani': 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=900',
+                'beef stew & rice': 'https://images.unsplash.com/photo-1604908554027-123b9944a5b1?w=900',
+                'chapati & beans': 'https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=900',
+                'ugali & tilapia': 'https://images.unsplash.com/photo-1599021456807-25db0f974333?w=900',
+                mandazi: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=900',
+                samosa: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=900',
+                'chips masala': 'https://images.unsplash.com/photo-1576107232684-1279f390859f?w=900',
+                bhajia: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=900',
+                'hot tea': 'https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=900',
+                'fresh juice': 'https://images.unsplash.com/photo-1546173159-315724a31696?w=900',
+                'soda 500ml': 'https://images.unsplash.com/photo-1581636625402-29b2a704ef13?w=900',
+                'mineral water': 'https://images.unsplash.com/photo-1564419320408-38e24e0385d1?w=900',
+                'chocolate cake': 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=900',
+                'ice cream sundae': 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=900',
+                'fruit salad': 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=900',
+                'pancake stack': 'https://images.unsplash.com/photo-1528207776546-365bb710ee93?w=900',
+                'spanish omelette': 'https://images.unsplash.com/photo-1612240498936-65f5101365d2?w=900',
+                'sausage & eggs': 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=900',
+                coleslaw: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=900',
+                kachumbari: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=900',
+                'kenyan cane 250ml': 'https://images.unsplash.com/photo-1582819509237-d04f8d3b4fd0?w=900',
+                'johnnie walker red label': 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=900',
+                'smirnoff vodka': 'https://images.unsplash.com/photo-1607622750671-6cd9a99f0fdd?w=900',
+                'tusker lager': 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=900',
+                'captain morgan rum': 'https://images.unsplash.com/photo-1536935338788-846bb9981813?w=900',
+                'gilbeys gin': 'https://images.unsplash.com/photo-1595977437232-9f4f4a6f13be?w=900',
+            };
+            if (byName[name]) return byName[name];
+            const pick = (arr) => arr[Math.abs(itemId || name.length) % arr.length];
+            if (category.includes('drink')) {
+                return pick([
+                    'https://images.unsplash.com/photo-1497534446932-c925b458314e?w=900',
+                    'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=900',
+                    'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=900',
+                ]);
+            }
+            if (category.includes('dessert')) {
+                return pick([
+                    'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=900',
+                    'https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81?w=900',
+                    'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=900',
+                ]);
+            }
+            if (category.includes('snack')) {
+                return pick([
+                    'https://images.unsplash.com/photo-1513639776629-7b61b0ac49cb?w=900',
+                    'https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?w=900',
+                    'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=900',
+                ]);
+            }
+            return pick([
+                'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=900',
+                'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?w=900',
+                'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=900',
+            ]);
+        }
+
+        function moneyToCents(v) {
+            if (v == null || v === '') return null;
+            const n = parseFloat(String(v).replace(/\s/g, '').replace(/,/g, ''));
+            if (!Number.isFinite(n)) return null;
+            return Math.round(n * 100);
+        }
+
+        function dedupeMenuItemsByName(items) {
+            if (!Array.isArray(items)) return [];
+            const seen = new Set();
+            const out = [];
+            for (const it of items) {
+                const key = String(it?.name || '')
+                    .toLowerCase()
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                if (!key || seen.has(key)) continue;
+                seen.add(key);
+                out.push(it);
+            }
+            return out;
+        }
+
         // Display menu items in grid
         function displayMenuItems(items) {
             const grid = document.getElementById('menuGrid');
@@ -1094,12 +2902,17 @@
             }
             
             grid.innerHTML = items.map(item => {
-                const imageUrl = item.image_url || item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500';
+                const rawMedia = item.image_url || item.image;
+                const fallbackImg = fallbackImageForMenuItem(item);
+                const mediaUrl = rawMedia ? resolveMenuMediaUrl(rawMedia) : fallbackImg;
+                const showVideo = rawMedia && isVideoMediaUrl(mediaUrl);
                 const nameEscaped = item.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const mediaHtml = showVideo
+                    ? `<video class="menu-image" src="${mediaUrl}" controls muted playsinline preload="metadata" title="${nameEscaped}"></video>`
+                    : `<img src="${mediaUrl}" alt="${nameEscaped}" class="menu-image" onerror="this.src='${fallbackImg}'">`;
                 return `
                 <div class="menu-card">
-                    <img src="${imageUrl}" alt="${nameEscaped}" class="menu-image" 
-                         onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500'">
+                    ${mediaHtml}
                     <div class="menu-info">
                         <div class="menu-header">
                             <span class="menu-name">${item.name}</span>
@@ -1107,8 +2920,21 @@
                         </div>
                         <div class="menu-description">${item.description || 'Delicious food made with love'}</div>
                         <div class="menu-footer">
-                            <span class="menu-price">KSh ${parseFloat(item.price).toFixed(2)}</span>
-                            <button class="add-to-cart" onclick="addToCart(${item.id}, '${nameEscaped}', ${parseFloat(item.price)})">
+                            <div>${(() => {
+                                const saleCents = moneyToCents(item.price);
+                                const wasCents = moneyToCents(getCompareAtFromMenuItem(item));
+                                const showDeal =
+                                    wasCents != null &&
+                                    saleCents != null &&
+                                    wasCents > saleCents;
+                                if (showDeal) {
+                                    const sale = saleCents / 100;
+                                    const was = wasCents / 100;
+                                    return `<div><span class="menu-deal-badge">Discount</span><div class="menu-price-stack"><span class="menu-price-was">Was KSh ${formatMenuKshAmount(was)}</span><span class="menu-price-now">Now KSh ${formatMenuKshAmount(sale)}</span></div></div>`;
+                                }
+                                return `<span class="menu-price">KSh ${formatMenuKshAmount(item.price)}</span>`;
+                            })()}</div>
+                            <button type="button" class="add-to-cart" onclick="event.stopPropagation(); addToCart(${item.id}, '${nameEscaped}', ${parseFloat(item.price)})">
                                 <span>+</span> Add
                             </button>
                         </div>
@@ -1118,10 +2944,10 @@
             }).join('');
         }
 
-        // Add item to cart
+        // Add item to cart (paid menu line — not merged with loyalty reward lines for the same dish)
         function addToCart(id, name, price) {
-            const existingItem = cart.find(item => item.id === id);
-            
+            const existingItem = cart.find((item) => item.id === id && !item.loyaltyRedeem);
+
             if (existingItem) {
                 existingItem.quantity += 1;
             } else {
@@ -1129,10 +2955,10 @@
                     id: id,
                     name: name,
                     price: price,
-                    quantity: 1
+                    quantity: 1,
                 });
             }
-            
+
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartDisplay();
             showToast(`${name} added to cart! 🎉`);
@@ -1156,37 +2982,54 @@
                     </div>
                 `;
             } else {
-                cartContainer.innerHTML = cart.map(item => `
+                cartContainer.innerHTML = cart
+                    .map((item) => {
+                        const isL = !!item.loyaltyRedeem;
+                        const priceLine = isL
+                            ? `⭐ ${item.loyaltyPointsPerUnit || 0} pts × ${item.quantity}`
+                            : `KSh ${item.price} × ${item.quantity}`;
+                        return `
                     <div class="cart-item">
                         <div class="cart-item-info">
-                            <div class="cart-item-name">${item.name}</div>
-                            <div class="cart-item-price">KSh ${item.price} x ${item.quantity}</div>
+                            <div class="cart-item-name">${item.name}${isL ? ' <span style="font-size:0.75rem;color:#5c4d9e;">(reward)</span>' : ''}</div>
+                            <div class="cart-item-price">${priceLine}</div>
                         </div>
                         <div class="cart-item-actions">
-                            <button onclick="updateQuantity(${item.id}, ${item.quantity - 1})">−</button>
+                            <button onclick="updateQuantity(${item.id}, ${item.quantity - 1}, ${isL})">−</button>
                             <span>${item.quantity}</span>
-                            <button onclick="updateQuantity(${item.id}, ${item.quantity + 1})">+</button>
+                            <button onclick="updateQuantity(${item.id}, ${item.quantity + 1}, ${isL})">+</button>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`;
+                    })
+                    .join('');
             }
 
-            // Update total
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            document.getElementById('cartTotal').textContent = `KSh ${total}`;
+            refreshCartTotals();
         }
 
-        // Update item quantity
-        function updateQuantity(id, newQuantity) {
+        // Update item quantity (loyalty reward lines are separate from paid lines for the same food id)
+        function updateQuantity(id, newQuantity, isLoyaltyReward) {
+            const isLoyalty = !!isLoyaltyReward;
+            const idx = cart.findIndex(
+                (item) => item.id === id && !!item.loyaltyRedeem === isLoyalty
+            );
+            if (idx === -1) return;
             if (newQuantity < 1) {
-                cart = cart.filter(item => item.id !== id);
+                cart.splice(idx, 1);
             } else {
-                const item = cart.find(item => item.id === id);
-                if (item) {
-                    item.quantity = newQuantity;
+                const item = cart[idx];
+                if (isLoyalty) {
+                    const bal = Number(userData?.loyaltyPoints ?? 0);
+                    const ppu = Number(item.loyaltyPointsPerUnit) || 0;
+                    const others = cartLoyaltyPointsTotal() - ppu * item.quantity;
+                    if (others + ppu * newQuantity > bal) {
+                        showToast('Not enough points for that quantity', 'error');
+                        return;
+                    }
                 }
+                item.quantity = newQuantity;
             }
-            
+
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartDisplay();
         }
@@ -1219,29 +3062,61 @@
                 return;
             }
 
-            // Calculate total
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            
+            refreshCartTotals();
+            const cashSub = cartSubtotalAmount();
+            const ptsRedeem = cartLoyaltyPointsTotal();
+            const balPts = Number(userData?.loyaltyPoints ?? 0);
+            if (ptsRedeem > balPts) {
+                showToast('Not enough points for the rewards in your cart. Remove some or earn more points.', 'error');
+                return;
+            }
+            const isLoyaltyOnly = cashSub <= 0 && ptsRedeem > 0;
+
             // Populate order summary
             const orderSummary = document.getElementById('orderSummary');
             orderSummary.innerHTML = `
                 <h3>Order Summary</h3>
-                ${cart.map(item => `
+                ${cart
+                    .map((item) => {
+                        const lineCash = (item.price * item.quantity).toFixed(2);
+                        const tag = item.loyaltyRedeem
+                            ? ` <span style="color:#5c4d9e;">(reward)</span>`
+                            : '';
+                        return `
                     <div class="order-summary-item">
-                        <span>${item.name} x ${item.quantity}</span>
-                        <span>KSh ${(item.price * item.quantity).toFixed(2)}</span>
-                    </div>
-                `).join('')}
+                        <span>${item.name}${tag} × ${item.quantity}</span>
+                        <span>${
+                            item.loyaltyRedeem
+                                ? `${(item.loyaltyPointsPerUnit || 0) * item.quantity} pts`
+                                : `KSh ${lineCash}`
+                        }</span>
+                    </div>`;
+                    })
+                    .join('')}
+                <div class="order-summary-item" style="border-top:1px solid #eee;padding-top:8px;margin-top:8px;">
+                    <span>Subtotal (cash items)</span>
+                    <span>KSh ${cashSub.toFixed(2)}</span>
+                </div>
+                ${
+                    ptsRedeem > 0
+                        ? `
+                <div class="order-summary-item" style="color:#5c4d9e;">
+                    <span>Loyalty rewards</span>
+                    <span>${ptsRedeem} pts</span>
+                </div>`
+                        : ''
+                }
                 <div class="order-summary-total">
-                    <span>Total Amount:</span>
-                    <span>KSh ${total.toFixed(2)}</span>
+                    <span>${isLoyaltyOnly ? 'M-Pesa amount:' : 'Amount to pay (M-Pesa):'}</span>
+                    <span>KSh ${cashSub.toFixed(2)}</span>
                 </div>
             `;
 
-            paymentTotalKes = Math.max(1, Math.round(total));
-
-            // Reset payment modal state
             resetPaymentModal();
+            paymentTotalKes = isLoyaltyOnly ? 0 : Math.max(1, Math.round(cashSub));
+            setPaymentModalLoyaltyOnlyMode(isLoyaltyOnly);
+            const cbtn = document.getElementById('confirmPaymentBtn');
+            if (cbtn) cbtn.textContent = isLoyaltyOnly ? 'Confirm order' : 'Pay with M-Pesa';
 
             const phoneEl = document.getElementById('mpesaPhone');
             if (phoneEl && userData?.phone) {
@@ -1281,6 +3156,7 @@
         // Close payment modal
         function closePaymentModal() {
             stopMpesaPolling();
+            setPaymentModalLoyaltyOnlyMode(false);
             document.getElementById('paymentModal').classList.remove('show');
             setTimeout(() => {
                 resetPaymentModal();
@@ -1290,10 +3166,16 @@
         async function placeOrderAfterPayment(paymentMethodLabel) {
             const response = await fetch(`${API_BASE}/api/orders`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: apiFetchHeaders(true),
                 body: JSON.stringify({
                     userId: userData.id,
-                    items: cart,
+                    items: cart.map((it) => ({
+                        id: it.id,
+                        name: it.name,
+                        price: it.price,
+                        quantity: it.quantity,
+                        loyaltyRedeem: !!it.loyaltyRedeem,
+                    })),
                     deliveryAddress: userData.address,
                     paymentMethod: paymentMethodLabel,
                 }),
@@ -1310,8 +3192,10 @@
         }
 
         async function pollMpesaStatus(checkoutRequestId) {
-            const res = await fetch(`${API_BASE}/api/payment/mpesa/status/${encodeURIComponent(checkoutRequestId)}`);
-            const data = await res.json();
+            const res = await fetch(`${API_BASE}/api/payment/mpesa/status/${encodeURIComponent(checkoutRequestId)}`, {
+                headers: apiFetchHeaders(false),
+            });
+            const data = await parseJsonResponse(res);
             if (!data.success) {
                 throw new Error(data.message || 'Status check failed');
             }
@@ -1323,6 +3207,28 @@
             if (cart.length === 0) {
                 showToast('Your cart is empty!', 'error');
                 closePaymentModal();
+                return;
+            }
+
+            const loyaltyOnly = document.getElementById('paymentModal').dataset.loyaltyOnly === '1';
+            const confirmBtnEarly = document.getElementById('confirmPaymentBtn');
+            if (loyaltyOnly) {
+                stopMpesaPolling();
+                try {
+                    if (confirmBtnEarly) {
+                        confirmBtnEarly.disabled = true;
+                        confirmBtnEarly.textContent = 'Placing order…';
+                    }
+                    const data = await placeOrderAfterPayment('Loyalty points');
+                    onOrderPlacedSuccess(data, 'Loyalty points');
+                } catch (error) {
+                    console.error('❌ Loyalty checkout:', error);
+                    showToast(error.message || 'Could not place order', 'error');
+                    if (confirmBtnEarly) {
+                        confirmBtnEarly.disabled = false;
+                        confirmBtnEarly.textContent = 'Confirm order';
+                    }
+                }
                 return;
             }
 
@@ -1343,7 +3249,7 @@
 
                 const stkRes = await fetch(`${API_BASE}/api/payment/mpesa/stk-push`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: apiFetchHeaders(true),
                     body: JSON.stringify({
                         phoneNumber,
                         amount: paymentTotalKes,
@@ -1352,7 +3258,16 @@
                     }),
                 });
 
-                const stkData = await stkRes.json().catch(() => ({}));
+                let stkData = {};
+                try {
+                    stkData = await parseJsonResponse(stkRes);
+                } catch (e) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = 'Pay with M-Pesa';
+                    setMpesaStatus(true, 'error', e.message || 'Bad response from server');
+                    showToast(e.message || 'Payment failed to start', 'error');
+                    return;
+                }
 
                 if (stkRes.status === 503 && stkData.code === 'MPESA_NOT_CONFIGURED') {
                     confirmBtn.disabled = false;
@@ -1403,17 +3318,7 @@
                                 : `M-Pesa STK${receipt}`;
 
                             const data = await placeOrderAfterPayment(method);
-                            showToast('Order placed successfully! 🎉', 'success');
-                            cart = [];
-                            localStorage.removeItem('cart');
-                            updateCartDisplay();
-                            closePaymentModal();
-                            toggleCart();
-                            setTimeout(() => {
-                                alert(
-                                    `Order #${data.orderId} placed successfully!\nTotal: KSh ${data.totalAmount}\nPayment: ${method}\n\nThank you for ordering!`
-                                );
-                            }, 400);
+                            onOrderPlacedSuccess(data, method);
                         } else if (st.status === 'failed') {
                             stopMpesaPolling();
                             confirmBtn.disabled = false;
@@ -1444,6 +3349,77 @@
             window.location.href = 'index.html';
         }
 
+        function applyTheme(theme) {
+            const isDark = theme === 'dark';
+            document.body.classList.toggle('dark-mode', isDark);
+            const t = document.getElementById('themeToggle');
+            if (t) t.textContent = isDark ? '☀ Light' : '🌙 Dark';
+        }
+
+        function setupThemeToggle() {
+            const t = document.getElementById('themeToggle');
+            if (!t) return;
+            const stored = localStorage.getItem('themeMode');
+            applyTheme(stored === 'dark' ? 'dark' : 'light');
+            t.addEventListener('click', () => {
+                const next = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+                localStorage.setItem('themeMode', next);
+                applyTheme(next);
+            });
+        }
+
+        function setupTopNavActiveState() {
+            const navLinks = Array.from(document.querySelectorAll('.nav-links a[data-nav-target]'));
+            if (!navLinks.length) return;
+
+            const byTarget = Object.fromEntries(navLinks.map((a) => [a.dataset.navTarget, a]));
+            const sections = {
+                menu: document.getElementById('menu'),
+                profile: document.getElementById('profile'),
+                leaderboard: document.getElementById('leaderboardSection'),
+                track: document.getElementById('trackOrdersSection'),
+            };
+
+            const setActive = (target) => {
+                navLinks.forEach((a) => a.classList.remove('active'));
+                const picked = byTarget[target] || byTarget.home;
+                if (picked) picked.classList.add('active');
+            };
+
+            // Click behavior: Home returns to top, section links use smooth scrolling.
+            navLinks.forEach((a) => {
+                a.addEventListener('click', (e) => {
+                    const target = a.dataset.navTarget;
+                    if (target === 'home') {
+                        e.preventDefault();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        setActive('home');
+                        return;
+                    }
+                    const sec = sections[target];
+                    if (sec) {
+                        e.preventDefault();
+                        sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        setActive(target);
+                    }
+                });
+            });
+
+            const updateByScroll = () => {
+                const y = window.scrollY + 160;
+                const entries = Object.entries(sections).filter(([, el]) => el);
+                entries.sort((a, b) => a[1].offsetTop - b[1].offsetTop);
+                let picked = 'home';
+                for (const [key, el] of entries) {
+                    if (y >= el.offsetTop - 40) picked = key;
+                }
+                setActive(picked);
+            };
+
+            updateByScroll();
+            document.addEventListener('scroll', updateByScroll, { passive: true });
+        }
+
         // Setup payment button event listeners
         function setupPaymentButtons() {
             const confirmBtn = document.getElementById('confirmPaymentBtn');
@@ -1460,8 +3436,64 @@
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            init();
+            setupThemeToggle();
+            init().catch((e) => console.error(e));
             setupPaymentButtons();
+            setupTopNavActiveState();
+            const aboutBtn = document.getElementById('aboutNavBtn');
+            if (aboutBtn) {
+                aboutBtn.addEventListener('click', () => openAboutModal());
+            }
+            const loyaltyNav = document.getElementById('loyaltyNav');
+            if (loyaltyNav) {
+                loyaltyNav.addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    openLoyaltyRewardsModal();
+                });
+                loyaltyNav.addEventListener('keydown', (ev) => {
+                    if (ev.key === 'Enter' || ev.key === ' ') {
+                        ev.preventDefault();
+                        openLoyaltyRewardsModal();
+                    }
+                });
+            }
+            const chatFab = document.getElementById('chatFab');
+            const chatSend = document.getElementById('chatSend');
+            const chatInput = document.getElementById('chatInput');
+            if (chatFab) chatFab.addEventListener('click', toggleChat);
+            if (chatSend) chatSend.addEventListener('click', () => sendChat());
+            if (chatInput) {
+                chatInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') sendChat();
+                });
+            }
+            // Refresh quickly when user returns to tab.
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) return;
+                loadMenuItems({ silent: true, keepCategory: true });
+                if (userData) {
+                    const detail = document.getElementById('trackOrderDetail');
+                    if (detail) {
+                        const pick = document.getElementById('trackOrderPick');
+                        const tid =
+                            (pick && pick.value) || sessionStorage.getItem('lastPlacedOrderId');
+                        if (tid) refreshOrderTrackDetail(tid);
+                    } else {
+                        loadOrderTracking();
+                    }
+                }
+            });
+            window.addEventListener('storage', (event) => {
+                if (event.key === 'menuLastUpdatedAt') {
+                    loadMenuItems({ silent: true, keepCategory: true });
+                }
+            });
+            try {
+                const menuCh = new BroadcastChannel('food-delivery-menu');
+                menuCh.addEventListener('message', () => {
+                    loadMenuItems({ silent: true, keepCategory: true });
+                });
+            } catch (_) {}
         });
     </script>
 </body>

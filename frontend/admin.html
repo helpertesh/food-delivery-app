@@ -261,15 +261,21 @@
                         <textarea id="foodDescription"></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Price (KSh) *</label>
+                        <label>Price (KSh) * — “now” (what customers pay)</label>
                         <input type="number" id="foodPrice" step="0.01" required>
                     </div>
                     <div class="form-group">
-                        <label>Image</label>
-                        <input type="file" id="foodImage" accept="image/*" onchange="previewImage(event)">
-                        <input type="text" id="foodImageUrl" placeholder="Or enter image URL" style="margin-top: 0.5rem;">
+                        <label>“Was” price (optional — for discounts)</label>
+                        <input type="number" id="foodCompareAtPrice" step="0.01" min="0" placeholder="e.g. 200 when “now” is 150">
+                        <small style="color:#666;display:block;margin-top:4px;">If set <strong>higher</strong> than the price above, the menu shows <strong>Was KSh … · Now KSh …</strong> (e.g. was 200, now 150). Leave empty for a normal single price.</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Image or video</label>
+                        <input type="file" id="foodImage" accept="image/*,video/mp4,video/webm,video/quicktime,.mov,.m4v" onchange="previewFoodMedia(event)">
+                        <input type="text" id="foodImageUrl" placeholder="Or paste image/video URL (https://…)" style="margin-top: 0.5rem;">
                         <div id="imagePreview" style="margin-top: 1rem; display: none;">
-                            <img id="previewImg" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 5px; border: 1px solid #ddd;">
+                            <img id="previewImg" src="" alt="Preview" style="max-width: 220px; max-height: 200px; border-radius: 5px; border: 1px solid #ddd; display: none;">
+                            <video id="previewVideo" controls playsinline muted style="max-width: 220px; max-height: 200px; border-radius: 5px; border: 1px solid #ddd; display: none;"></video>
                         </div>
                     </div>
                     <div class="form-group">
@@ -293,10 +299,10 @@
                 <table class="table" id="foodItemsTable" style="display: none;">
                     <thead>
                         <tr>
-                            <th>Image</th>
+                            <th>Preview</th>
                             <th>Name</th>
                             <th>Description</th>
-                            <th>Price</th>
+                            <th>Price / promo</th>
                             <th>Category</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -342,6 +348,7 @@
                             <th>Name</th>
                             <th>Email</th>
                             <th>Phone</th>
+                            <th>Loyalty</th>
                             <th>Role</th>
                             <th>Joined</th>
                             <th>Actions</th>
@@ -384,10 +391,68 @@
     </div>
 
     <script>
-        const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000' : window.location.origin;
+        /** Same rules as dashboard — admin must hit the Node API (port 3000), not Live Server’s origin. */
+        function resolveFoodDeliveryApiBase() {
+            const meta = document.querySelector('meta[name="api-base"]');
+            if (meta && meta.content && meta.content.trim()) {
+                return meta.content.trim().replace(/\/$/, '');
+            }
+            try {
+                const stored = localStorage.getItem('foodDeliveryApiBase');
+                if (stored && stored.trim()) return stored.trim().replace(/\/$/, '');
+            } catch (_) {}
+            if (window.location.protocol === 'file:') return 'http://localhost:3000';
+            const host = window.location.hostname;
+            const port = window.location.port;
+            const loopback =
+                host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host === '::1';
+            if (port === '3000' || (port === '' && loopback)) {
+                return window.location.origin;
+            }
+            if (loopback) {
+                const h = host === '[::1]' || host === '::1' ? '127.0.0.1' : host;
+                return `http://${h}:3000`;
+            }
+            return window.location.origin;
+        }
+        const API_BASE = resolveFoodDeliveryApiBase();
         let currentEditingId = null;
         let categories = [];
         let adminUserId = null;
+        let previewVideoObjectUrl = null;
+
+        function isVideoMediaUrl(url) {
+            if (!url || typeof url !== 'string') return false;
+            const u = url.split(/[?#]/)[0].toLowerCase();
+            return /\.(mp4|webm|mov|m4v)(\/)?$/i.test(u);
+        }
+
+        function mediaThumbHtml(src) {
+            if (!src) return '—';
+            const url = src.startsWith('http') ? src : `${API_BASE}${src}`;
+            if (isVideoMediaUrl(url)) {
+                return `<video src="${url}" muted playsinline style="width:72px;height:72px;object-fit:cover;border-radius:6px;" preload="metadata"></video>`;
+            }
+            return `<img src="${url}" alt="" style="width:72px;height:72px;object-fit:cover;border-radius:6px;" onerror="this.style.display='none'">`;
+        }
+        
+        function notifyFrontendMenuChanged(reason) {
+            localStorage.setItem('menuLastUpdatedAt', JSON.stringify({
+                at: Date.now(),
+                reason: reason || 'admin-change'
+            }));
+            try {
+                const ch = new BroadcastChannel('food-delivery-menu');
+                ch.postMessage({ at: Date.now(), reason: reason || 'admin-change' });
+                ch.close();
+            } catch (_) {}
+        }
+
+        function normalizeAdminDecimalField(id) {
+            const el = document.getElementById(id);
+            if (!el) return '';
+            return String(el.value || '').trim().replace(/\s/g, '').replace(/,/g, '.');
+        }
 
         // Check if user is admin
         function checkAdmin() {
@@ -484,12 +549,21 @@
         // Display food items
         function displayFoodItems(items) {
             const tbody = document.getElementById('foodItemsBody');
-            tbody.innerHTML = items.map(item => `
+            tbody.innerHTML = items.map(item => {
+                const sale = parseFloat(item.price);
+                const was = item.compare_at_price != null && item.compare_at_price !== ''
+                    ? parseFloat(item.compare_at_price)
+                    : NaN;
+                const showWas = Number.isFinite(was) && was > sale;
+                const priceCell = showWas
+                    ? `<span style="text-decoration:line-through;color:#999;">KSh ${was.toFixed(2)}</span><br><strong style="color:#c62828;">KSh ${sale.toFixed(2)}</strong>`
+                    : `KSh ${sale.toFixed(2)}`;
+                return `
                 <tr>
-                    <td><img src="${item.image || 'https://via.placeholder.com/60'}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/60'"></td>
+                    <td>${mediaThumbHtml(item.image)}</td>
                     <td>${item.name}</td>
                     <td>${item.description || '-'}</td>
-                    <td>KSh ${parseFloat(item.price).toFixed(2)}</td>
+                    <td>${priceCell}</td>
                     <td>${item.category || '-'}</td>
                     <td><span class="status-badge ${item.status === 'Available' ? 'status-available' : 'status-unavailable'}">${item.status}</span></td>
                     <td>
@@ -499,24 +573,42 @@
                         </div>
                     </td>
                 </tr>
-            `).join('');
-            
+            `;
+            }).join('');
+
             document.getElementById('foodItemsTable').style.display = 'table';
         }
 
-        // Preview image when file is selected
-        function previewImage(event) {
+        // Preview image or video when file is selected
+        function previewFoodMedia(event) {
             const file = event.target.files[0];
             const preview = document.getElementById('imagePreview');
             const previewImg = document.getElementById('previewImg');
-            
+            const previewVideo = document.getElementById('previewVideo');
+
+            if (previewVideoObjectUrl) {
+                URL.revokeObjectURL(previewVideoObjectUrl);
+                previewVideoObjectUrl = null;
+            }
+
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    preview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
+                preview.style.display = 'block';
+                if (file.type.startsWith('video/')) {
+                    previewImg.style.display = 'none';
+                    previewImg.removeAttribute('src');
+                    previewVideo.style.display = 'block';
+                    previewVideoObjectUrl = URL.createObjectURL(file);
+                    previewVideo.src = previewVideoObjectUrl;
+                } else {
+                    previewVideo.style.display = 'none';
+                    previewVideo.removeAttribute('src');
+                    previewImg.style.display = 'block';
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        previewImg.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
             } else {
                 preview.style.display = 'none';
             }
@@ -525,11 +617,25 @@
         // Add food item
         async function addFoodItem(event) {
             event.preventDefault();
-            
+
+            const saleStr = normalizeAdminDecimalField('foodPrice');
+            const wasStr = normalizeAdminDecimalField('foodCompareAtPrice');
+            const sale = parseFloat(saleStr);
+            const was = wasStr === '' ? NaN : parseFloat(wasStr);
+            if (wasStr !== '' && Number.isFinite(was) && Number.isFinite(sale) && was <= sale) {
+                showMessage(
+                    'foodMessage',
+                    '“Was” must be higher than the sale price. Customers pay the “Price” field (e.g. 150). Put the old list price in “Was” (e.g. 200).',
+                    'error'
+                );
+                return;
+            }
+
             const formData = new FormData();
             formData.append('name', document.getElementById('foodName').value);
             formData.append('description', document.getElementById('foodDescription').value);
-            formData.append('price', parseFloat(document.getElementById('foodPrice').value));
+            formData.append('price', saleStr);
+            formData.append('compare_at_price', wasStr);
             formData.append('category_id', parseInt(document.getElementById('foodCategory').value));
             formData.append('status', document.getElementById('foodStatus').value);
             
@@ -567,8 +673,15 @@
                     showMessage('foodMessage', currentEditingId ? 'Food item updated!' : 'Food item added!', 'success');
                     document.getElementById('foodForm').reset();
                     document.getElementById('imagePreview').style.display = 'none';
+                    document.getElementById('previewImg').style.display = 'none';
+                    document.getElementById('previewVideo').style.display = 'none';
+                    if (previewVideoObjectUrl) {
+                        URL.revokeObjectURL(previewVideoObjectUrl);
+                        previewVideoObjectUrl = null;
+                    }
                     currentEditingId = null;
                     loadFoodItems();
+                    notifyFrontendMenuChanged('food-upsert');
                 } else {
                     showMessage('foodMessage', data.message, 'error');
                 }
@@ -593,6 +706,10 @@
                         document.getElementById('foodName').value = item.name;
                         document.getElementById('foodDescription').value = item.description || '';
                         document.getElementById('foodPrice').value = item.price;
+                        document.getElementById('foodCompareAtPrice').value =
+                            item.compare_at_price != null && item.compare_at_price !== ''
+                                ? item.compare_at_price
+                                : '';
                         document.getElementById('foodImageUrl').value = item.image || '';
                         document.getElementById('foodCategory').value = item.category_id;
                         document.getElementById('foodStatus').value = item.status;
@@ -603,9 +720,24 @@
                         // Show preview if image exists
                         const preview = document.getElementById('imagePreview');
                         const previewImg = document.getElementById('previewImg');
+                        const previewVideo = document.getElementById('previewVideo');
+                        if (previewVideoObjectUrl) {
+                            URL.revokeObjectURL(previewVideoObjectUrl);
+                            previewVideoObjectUrl = null;
+                        }
                         if (item.image) {
-                            previewImg.src = item.image.startsWith('http') ? item.image : `${API_BASE}${item.image}`;
+                            const fullSrc = item.image.startsWith('http') ? item.image : `${API_BASE}${item.image}`;
                             preview.style.display = 'block';
+                            if (isVideoMediaUrl(fullSrc)) {
+                                previewImg.style.display = 'none';
+                                previewVideo.style.display = 'block';
+                                previewVideo.src = fullSrc;
+                            } else {
+                                previewVideo.style.display = 'none';
+                                previewVideo.removeAttribute('src');
+                                previewImg.style.display = 'block';
+                                previewImg.src = fullSrc;
+                            }
                         } else {
                             preview.style.display = 'none';
                         }
@@ -636,6 +768,7 @@
                 if (data.success) {
                     showMessage('foodMessage', 'Food item deleted!', 'success');
                     loadFoodItems();
+                    notifyFrontendMenuChanged('food-delete');
                 } else {
                     showMessage('foodMessage', data.message, 'error');
                 }
@@ -678,6 +811,7 @@
                             <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
                             <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
                             <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>Preparing</option>
+                            <option value="transit" ${order.status === 'transit' ? 'selected' : ''}>Transit</option>
                             <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
                             <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                         </select>
@@ -764,6 +898,10 @@
                     <td>${user.name}</td>
                     <td>${user.email}</td>
                     <td>${user.phone || 'N/A'}</td>
+                    <td>
+                        <span id="loyaltyVal-${user.id}">⭐ ${user.loyalty_points ?? 0}</span>
+                        <button type="button" class="btn btn-edit" style="margin-left:6px;padding:4px 8px;font-size:0.8rem;" onclick="grantLoyaltyPoints(${user.id}, 500)">+500</button>
+                    </td>
                     <td>${user.is_admin ? '👑 Admin' : '👤 User'}</td>
                     <td>${new Date(user.created_at).toLocaleDateString()}</td>
                     <td>
@@ -775,6 +913,30 @@
             `).join('');
             
             document.getElementById('usersTable').style.display = 'table';
+        }
+
+        async function grantLoyaltyPoints(userId, addPoints) {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/users/${userId}/loyalty`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'user-id': adminUserId,
+                    },
+                    body: JSON.stringify({ addPoints }),
+                });
+                const data = await response.json();
+                if (data.success) {
+                    const el = document.getElementById(`loyaltyVal-${userId}`);
+                    if (el) el.textContent = `⭐ ${data.loyaltyPoints}`;
+                    showMessage('usersMessage', `User #${userId} now has ${data.loyaltyPoints} loyalty points.`, 'success');
+                } else {
+                    showMessage('usersMessage', data.message || 'Could not update points', 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showMessage('usersMessage', 'Error: ' + error.message, 'error');
+            }
         }
 
         // Toggle user admin status
@@ -860,6 +1022,7 @@
                     showMessage('categoryMessage', 'Category added!', 'success');
                     document.getElementById('categoryForm').reset();
                     loadCategoriesList();
+                    notifyFrontendMenuChanged('category-add');
                 } else {
                     showMessage('categoryMessage', data.message, 'error');
                 }
@@ -884,6 +1047,7 @@
                 if (data.success) {
                     showMessage('categoryMessage', 'Category deleted!', 'success');
                     loadCategoriesList();
+                    notifyFrontendMenuChanged('category-delete');
                 } else {
                     showMessage('categoryMessage', data.message, 'error');
                 }
@@ -891,7 +1055,6 @@
                 showMessage('categoryMessage', 'Error: ' + error.message, 'error');
             }
         }
-
 
         // Initialize
         if (checkAdmin()) {

@@ -1,2 +1,6 @@
 # Generated for Vercel deploys (copy of frontend/)
 public/
+
+.env
+backend/.env
+backend/ngrok.exe

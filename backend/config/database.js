@@ -1,44 +1,140 @@
 // config/database.js — MySQL (mysql2) or PostgreSQL (pg), e.g. Supabase on Vercel.
 const mysql = require('mysql2');
 const { Pool: PgPool } = require('pg');
+const { parse: parsePgConn } = require('pg-connection-string');
 
-/**
- * Postgres if any of these is a postgres:// or postgresql:// URL (first match wins).
- * Vercel + Supabase often sets POSTGRES_URL / POSTGRES_URL_NON_POOLING.
- */
-function getPostgresConnectionString() {
-    const keys = [
-        'POSTGRES_URL',
-        'POSTGRES_PRISMA_URL',
-        'POSTGRES_URL_NON_POOLING',
-        'SUPABASE_DB_URL',
-        'DATABASE_URL',
-    ];
-    for (const k of keys) {
+/** Set DATABASE_DIALECT=mysql in backend/.env to always use MySQL (ignore Postgres URLs in the environment). */
+const forceMysqlDialect = (process.env.DATABASE_DIALECT || '').toLowerCase() === 'mysql';
+
+/** Prefer pooler / Prisma URL first everywhere (local + Vercel + Supabase integration). */
+const POSTGRES_URL_ENV_KEYS = [
+    'POSTGRES_PRISMA_URL',
+    'POSTGRES_URL_NON_POOLING',
+    'POSTGRES_URL',
+    'SUPABASE_DB_URL',
+    'DATABASE_URL',
+];
+
+function getPostgresConnectionEnvKey() {
+    for (const k of POSTGRES_URL_ENV_KEYS) {
         const v = process.env[k]?.trim();
-        if (v && /^postgres(ql)?:\/\//i.test(v)) return v;
+        if (v && /^postgres(ql)?:\/\//i.test(v)) return k;
     }
     return null;
 }
 
+function getPostgresConnectionString() {
+    const k = getPostgresConnectionEnvKey();
+    return k ? process.env[k].trim() : null;
+}
+
+function getPostgresEnvFlags() {
+    const out = {};
+    for (const k of POSTGRES_URL_ENV_KEYS) {
+        const v = process.env[k]?.trim();
+        out[k] = Boolean(v && /^postgres(ql)?:\/\//i.test(v));
+    }
+    return out;
+}
+
+/**
+ * Vercel/Supabase URLs often include sslmode=require or verify-full. node-pg can still
+ * verify the chain and throw "self-signed certificate in certificate chain".
+ * Strip ssl-related query params so Pool `ssl` options below always apply.
+ */
+function normalizePostgresConnectionString(url) {
+    try {
+        const u = new URL(url);
+        const strip = ['sslmode', 'ssl', 'sslrootcert', 'sslcert', 'sslkey'];
+        for (const p of strip) {
+            u.searchParams.delete(p);
+        }
+        let out = u.toString();
+        if (out.endsWith('?')) {
+            out = out.slice(0, -1);
+        }
+        return out;
+    } catch {
+        return url;
+    }
+}
+
+function pgSslOption() {
+    const disableSsl = process.env.DB_SSL === 'false' || process.env.DB_SSL === '0';
+    if (disableSsl) {
+        return false;
+    }
+    const mode = (process.env.PGSSLMODE || '').toLowerCase();
+    if (mode === 'disable' || mode === 'false') {
+        return false;
+    }
+    if (mode === 'verify-full' || mode === 'require-full') {
+        return { rejectUnauthorized: true };
+    }
+    // Supabase / pooler: TLS without strict CA chain (fixes "self-signed certificate in certificate chain")
+    return { rejectUnauthorized: false };
+}
+
+/**
+ * Build Pool config from URL: only pass explicit fields + ssl (avoid stray query params confusing pg).
+ */
+function buildPgPoolConfig(connectionUrl) {
+    const normalized = normalizePostgresConnectionString(connectionUrl);
+    const parsed = parsePgConn(normalized);
+    const config = {
+        user: parsed.user,
+        password: parsed.password,
+        host: parsed.host,
+        database: parsed.database || undefined,
+        ssl: pgSslOption(),
+        max: process.env.VERCEL ? 2 : 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 20000,
+    };
+    if (parsed.options) {
+        config.options = parsed.options;
+    }
+    if (parsed.port != null && parsed.port !== '') {
+        const p = Number(parsed.port);
+        if (!Number.isNaN(p) && p > 0) {
+            config.port = p;
+        }
+    }
+    if (!config.host || !config.user) {
+        throw new Error('Invalid Postgres connection string: missing host or user');
+    }
+    return config;
+}
+
 function buildMysqlPoolConfig() {
-    const dbUrl = process.env.DATABASE_URL?.trim();
+    const dbUrl = process.env.DATABASE_URL?.trim() || '';
+    if (dbUrl && /^postgres/i.test(dbUrl) && !forceMysqlDialect) {
+        throw new Error('DATABASE_URL is PostgreSQL; use POSTGRES_* or set DATABASE_DIALECT=mysql and clear DATABASE_URL.');
+    }
     if (dbUrl && /^mysql/i.test(dbUrl)) {
         return dbUrl;
-    }
-    if (dbUrl && /^postgres/i.test(dbUrl)) {
-        throw new Error('DATABASE_URL is PostgreSQL; use POSTGRES_* or unset MySQL DATABASE_URL.');
     }
 
     const useSsl = process.env.DB_SSL === 'true' || process.env.DB_SSL === '1';
 
-    const ssl = useSsl
-        ? {
-              rejectUnauthorized:
-                  process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false' &&
-                  process.env.DB_SSL_REJECT_UNAUTHORIZED !== '0',
-          }
-        : undefined;
+    let ssl;
+    if (useSsl) {
+        const explicitRelax =
+            process.env.DB_SSL_REJECT_UNAUTHORIZED === 'false' ||
+            process.env.DB_SSL_REJECT_UNAUTHORIZED === '0';
+        const explicitStrict =
+            process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true' ||
+            process.env.DB_SSL_REJECT_UNAUTHORIZED === '1';
+        if (explicitRelax) {
+            ssl = { rejectUnauthorized: false };
+        } else if (explicitStrict) {
+            ssl = { rejectUnauthorized: true };
+        } else if (process.env.VERCEL) {
+            ssl = { rejectUnauthorized: false };
+        } else {
+            ssl = { rejectUnauthorized: true };
+        }
+    }
 
     const config = {
         host: process.env.DB_HOST || 'localhost',
@@ -61,23 +157,20 @@ function buildMysqlPoolConfig() {
     return config;
 }
 
-const postgresUrl = getPostgresConnectionString();
-const dialect = postgresUrl ? 'postgres' : 'mysql';
+const postgresUrlRaw = forceMysqlDialect ? null : getPostgresConnectionString();
+const dialect = postgresUrlRaw ? 'postgres' : 'mysql';
 
 let mysqlPool = null;
 let pgPool = null;
+let mysqlPoolConfig = null;
+let mysqlBlankPasswordFallbackTried = false;
+let mysqlCreateDatabaseTried = false;
 
 if (dialect === 'postgres') {
-    const disableSsl = process.env.DB_SSL === 'false' || process.env.DB_SSL === '0';
-    pgPool = new PgPool({
-        connectionString: postgresUrl,
-        ssl: disableSsl ? false : { rejectUnauthorized: false },
-        max: process.env.VERCEL ? 2 : 10,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 20000,
-    });
+    pgPool = new PgPool(buildPgPoolConfig(postgresUrlRaw));
 } else {
     const cfg = buildMysqlPoolConfig();
+    mysqlPoolConfig = cfg;
     mysqlPool = typeof cfg === 'string' ? mysql.createPool(cfg) : mysql.createPool(cfg);
 }
 
@@ -160,8 +253,84 @@ async function queryPostgres(sql, params = []) {
     return [r.rows, undefined];
 }
 
+function canTryMysqlBlankPasswordFallback(error) {
+    if (dialect !== 'mysql') return false;
+    if (mysqlBlankPasswordFallbackTried) return false;
+    if (!error || String(error.code) !== 'ER_ACCESS_DENIED_ERROR') return false;
+    if (!mysqlPoolConfig || typeof mysqlPoolConfig === 'string') return false;
+    const user = String(mysqlPoolConfig.user || '').toLowerCase();
+    if (user !== 'root') return false;
+    const hasPassword = String(mysqlPoolConfig.password ?? '').length > 0;
+    return hasPassword;
+}
+
+function switchMysqlPoolToBlankPassword() {
+    if (!mysqlPoolConfig || typeof mysqlPoolConfig === 'string') return false;
+    const nextCfg = { ...mysqlPoolConfig, password: '' };
+    try {
+        if (mysqlPool && typeof mysqlPool.end === 'function') {
+            mysqlPool.end(() => {});
+        }
+    } catch (_) {}
+    mysqlPoolConfig = nextCfg;
+    mysqlPool = mysql.createPool(nextCfg);
+    mysqlBlankPasswordFallbackTried = true;
+    console.warn(
+        'MySQL auth failed for root with configured password; retried with blank password fallback.'
+    );
+    return true;
+}
+
+function canTryMysqlCreateDatabase(error) {
+    if (dialect !== 'mysql') return false;
+    if (mysqlCreateDatabaseTried) return false;
+    if (!error || String(error.code) !== 'ER_BAD_DB_ERROR') return false;
+    if (!mysqlPoolConfig || typeof mysqlPoolConfig === 'string') return false;
+    return String(mysqlPoolConfig.database || '').trim().length > 0;
+}
+
+async function createMissingMysqlDatabaseAndReconnect() {
+    if (!mysqlPoolConfig || typeof mysqlPoolConfig === 'string') return false;
+    const dbName = String(mysqlPoolConfig.database || '').trim();
+    if (!dbName) return false;
+
+    const adminCfg = { ...mysqlPoolConfig };
+    delete adminCfg.database;
+
+    const adminPool = mysql.createPool(adminCfg);
+    try {
+        await adminPool
+            .promise()
+            .query(`CREATE DATABASE IF NOT EXISTS \`${dbName.replace(/`/g, '``')}\``);
+    } finally {
+        try {
+            await adminPool.end();
+        } catch (_) {}
+    }
+
+    try {
+        if (mysqlPool && typeof mysqlPool.end === 'function') {
+            mysqlPool.end(() => {});
+        }
+    } catch (_) {}
+    mysqlPool = mysql.createPool(mysqlPoolConfig);
+    mysqlCreateDatabaseTried = true;
+    console.warn(`MySQL database "${dbName}" was missing; created automatically.`);
+    return true;
+}
+
 async function queryMysql(sql, params) {
-    return mysqlPool.promise().query(sql, params);
+    try {
+        return await mysqlPool.promise().query(sql, params);
+    } catch (error) {
+        if (canTryMysqlCreateDatabase(error) && (await createMissingMysqlDatabaseAndReconnect())) {
+            return mysqlPool.promise().query(sql, params);
+        }
+        if (canTryMysqlBlankPasswordFallback(error) && switchMysqlPoolToBlankPassword()) {
+            return mysqlPool.promise().query(sql, params);
+        }
+        throw error;
+    }
 }
 
 async function query(sql, params) {
@@ -171,4 +340,10 @@ async function query(sql, params) {
     return queryMysql(sql, params ?? []);
 }
 
-module.exports = { query, dialect };
+module.exports = {
+    query,
+    dialect,
+    forceMysqlDialect,
+    getPostgresConnectionEnvKey,
+    getPostgresEnvFlags,
+};

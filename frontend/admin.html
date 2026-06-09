@@ -233,7 +233,7 @@
     <nav class="navbar">
         <h1>🍔 Admin Dashboard</h1>
         <div class="nav-links">
-            <a href="dashboard.html">User View</a>
+            <a href="home.html">User View</a>
             <a href="#" onclick="logout()">Logout</a>
         </div>
     </nav>
@@ -465,7 +465,7 @@
             const userData = JSON.parse(user);
             if (!userData.isAdmin) {
                 alert('Admin access required!');
-                window.location.href = 'dashboard.html';
+                window.location.href = 'home.html';
                 return false;
             }
             

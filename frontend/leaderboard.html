@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard - Food Delivery</title>
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/pages.css">
+</head>
+<body data-page="leaderboard">
+    <div class="page-bg" aria-hidden="true">
+        <span class="blob blob-1"></span>
+        <span class="blob blob-2"></span>
+        <span class="blob blob-3"></span>
+    </div>
+
+    <div id="app-nav"></div>
+
+    <div class="container page-container">
+        <header class="page-hero animate-in">
+            <span class="page-hero-icon">🏆</span>
+            <h1>Top Clients Leaderboard</h1>
+            <p>Top 3 clients earn free food vouchers and free delivery. Keep ordering to climb the ranks!</p>
+        </header>
+
+        <div class="feature-strip animate-in delay-1" id="leaderboardSection">
+            <div id="leaderboardMyReward" style="margin:0 0 14px;font-size:0.95rem;color:#5c4d9e;font-weight:600;"></div>
+            <div class="leaderboard-grid" id="leaderboardGrid">
+                <p style="grid-column:1/-1;color:#888;">Loading leaderboard…</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-modals"></div>
+    <script src="js/app.js"></script>
+</body>
+</html>

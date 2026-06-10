@@ -1642,6 +1642,64 @@
             document.querySelectorAll('.nav-links a[data-page]').forEach((a) => {
                 a.classList.toggle('active', a.dataset.page === current);
             });
+            const brand = document.querySelector('.nav-brand');
+            if (brand) {
+                brand.classList.toggle('active', current === 'home');
+            }
+        }
+
+        function closeMobileNav() {
+            const drawer = document.getElementById('navDrawer');
+            const toggle = document.getElementById('navToggle');
+            const overlay = document.getElementById('navOverlay');
+            if (drawer) drawer.classList.remove('open');
+            if (toggle) {
+                toggle.classList.remove('open');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+            if (overlay) {
+                overlay.classList.remove('visible');
+                overlay.setAttribute('aria-hidden', 'true');
+            }
+            document.body.classList.remove('nav-open');
+        }
+
+        function setupMobileNav() {
+            const toggle = document.getElementById('navToggle');
+            const drawer = document.getElementById('navDrawer');
+            const overlay = document.getElementById('navOverlay');
+            if (!toggle || !drawer) return;
+
+            const openNav = () => {
+                drawer.classList.add('open');
+                toggle.classList.add('open');
+                toggle.setAttribute('aria-expanded', 'true');
+                if (overlay) {
+                    overlay.classList.add('visible');
+                    overlay.setAttribute('aria-hidden', 'false');
+                }
+                document.body.classList.add('nav-open');
+            };
+
+            toggle.addEventListener('click', () => {
+                if (drawer.classList.contains('open')) {
+                    closeMobileNav();
+                } else {
+                    openNav();
+                }
+            });
+
+            if (overlay) {
+                overlay.addEventListener('click', closeMobileNav);
+            }
+
+            drawer.querySelectorAll('a').forEach((link) => {
+                link.addEventListener('click', closeMobileNav);
+            });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 900) closeMobileNav();
+            });
         }
 
         // Setup payment button event listeners
@@ -1663,6 +1721,7 @@
             await loadPartials();
             setupThemeToggle();
             setupNavActiveState();
+            setupMobileNav();
             setupPaymentButtons();
             const loyaltyNav = document.getElementById('loyaltyNav');
             if (loyaltyNav) {

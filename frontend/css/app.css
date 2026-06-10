@@ -1551,10 +1551,141 @@
         @media (max-width: 768px) {
             .cart-panel {
                 width: 100%;
+                max-width: 100%;
                 right: -100%;
+                padding: 1.25rem;
+                padding-top: calc(1.25rem + env(safe-area-inset-top, 0px));
+                padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
             }
-            
+
+            .cart-header h2 {
+                font-size: 1.25rem;
+            }
+
+            .checkout-btn {
+                min-height: 48px;
+                font-size: 1rem;
+            }
+
             .menu-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .chat-fab {
+                bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+                right: 16px;
+                width: 52px;
+                height: 52px;
+            }
+
+            .chat-panel {
+                right: 12px;
+                left: 12px;
+                width: auto;
+                bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+                height: min(420px, 55vh);
+            }
+
+            .chat-input-row input {
+                font-size: 16px;
+                min-height: 44px;
+            }
+
+            .chat-input-row button {
+                min-height: 44px;
+                min-width: 64px;
+            }
+
+            .toast {
+                left: 12px;
+                right: 12px;
+                bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+                text-align: center;
+            }
+
+            .payment-content {
+                width: 100%;
+                max-width: 100%;
+                max-height: 95vh;
+                max-height: 95dvh;
+                border-radius: 16px 16px 0 0;
+                margin-top: auto;
+            }
+
+            .payment-modal.show {
+                align-items: flex-end;
+                padding: 0;
+            }
+
+            .payment-content-scroll {
+                padding: 1.5rem 1.25rem 1rem;
+            }
+
+            .payment-header h2 {
+                font-size: 1.35rem;
+            }
+
+            .payment-info {
+                padding: 1.25rem;
+            }
+
+            .payment-actions {
+                flex-direction: column-reverse;
+                gap: 0.5rem;
+                padding: 1rem 1.25rem;
+                padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+            }
+
+            .payment-btn {
+                width: 100%;
+                min-height: 48px;
+            }
+
+            .mpesa-phone-input {
+                font-size: 16px;
+                min-height: 44px;
+            }
+
+            .loyalty-rewards-box {
+                max-height: 90vh;
+                max-height: 90dvh;
+                padding: 1rem;
+            }
+
+            .loyalty-reward-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            }
+
+            .review-box,
+            .about-box {
+                width: 100%;
+                max-width: 100%;
+                margin: 0 12px;
+                padding: 1.25rem;
+            }
+
+            .about-modal,
+            .review-modal,
+            .loyalty-rewards-modal {
+                padding: 12px;
+                align-items: flex-end;
+            }
+
+            .about-box,
+            .review-box {
+                border-radius: 16px 16px 0 0;
+                max-height: 92vh;
+                max-height: 92dvh;
+                overflow-y: auto;
+            }
+
+            .cart-item {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .quantity-controls button {
+                min-width: 36px;
+                min-height: 36px;
             }
         }

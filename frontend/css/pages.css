@@ -75,7 +75,50 @@ body.dark-mode .page-bg .blob-3 { background: #1d4ed8; }
     66% { transform: translate(-20px, 25px) scale(0.95); }
 }
 
-#app-nav,
+#app-nav {
+    position: sticky;
+    top: 0;
+    z-index: 1200;
+    isolation: isolate;
+}
+
+@media (min-width: 901px) {
+    #app-nav {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0 0.5rem 0 0;
+    }
+
+    #app-nav .nav-drawer {
+        position: static;
+        transform: none;
+        visibility: visible;
+        pointer-events: auto;
+        width: auto;
+        height: auto;
+        flex: 1;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0;
+        background: none;
+        box-shadow: none;
+        overflow: visible;
+    }
+
+    #app-nav .nav-overlay {
+        display: none !important;
+    }
+
+    .navbar {
+        position: static;
+        z-index: auto;
+        flex-shrink: 0;
+        padding-right: 0;
+    }
+}
+
 .page-container,
 .container {
     position: relative;
@@ -551,6 +594,11 @@ body.dark-mode .leaderboard-card:nth-child(3) {
 }
 
 /* Navbar */
+#app-nav .navbar {
+    position: static;
+    top: auto;
+}
+
 .navbar {
     backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -681,7 +729,7 @@ body.dark-mode .leaderboard-card:nth-child(3) {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.45);
-    z-index: 1050;
+    z-index: 1290;
     opacity: 0;
     transition: opacity 0.3s;
 }
@@ -790,8 +838,9 @@ body.nav-open {
         display: flex;
     }
 
-    /* Hide nav links from top bar — only in slide-out drawer */
-    .navbar > .nav-drawer {
+    /* Slide-out drawer — sibling of navbar, not inside backdrop-filter */
+    #app-nav .nav-drawer {
+        display: flex;
         position: fixed;
         top: 0;
         right: 0;
@@ -811,15 +860,27 @@ body.nav-open {
         visibility: hidden;
         pointer-events: none;
         transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.3s;
-        z-index: 1100;
+        z-index: 1300;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
 
-    .navbar > .nav-drawer.open {
+    #app-nav .nav-drawer.open {
         transform: translateX(0);
         visibility: visible;
         pointer-events: auto;
+    }
+
+    #app-nav .navbar {
+        position: relative;
+        z-index: 1301;
+        width: 100%;
+        flex-wrap: nowrap;
+    }
+
+    .nav-quick {
+        position: relative;
+        z-index: 1302;
     }
 
     .nav-links {

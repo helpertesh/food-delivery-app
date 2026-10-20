@@ -75,7 +75,50 @@ body.dark-mode .page-bg .blob-3 { background: #1d4ed8; }
     66% { transform: translate(-20px, 25px) scale(0.95); }
 }
 
-#app-nav,
+#app-nav {
+    position: sticky;
+    top: 0;
+    z-index: 1200;
+    isolation: isolate;
+}
+
+@media (min-width: 901px) {
+    #app-nav {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0 0.5rem 0 0;
+    }
+
+    #app-nav .nav-drawer {
+        position: static;
+        transform: none;
+        visibility: visible;
+        pointer-events: auto;
+        width: auto;
+        height: auto;
+        flex: 1;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0;
+        background: none;
+        box-shadow: none;
+        overflow: visible;
+    }
+
+    #app-nav .nav-overlay {
+        display: none !important;
+    }
+
+    .navbar {
+        position: static;
+        z-index: auto;
+        flex-shrink: 0;
+        padding-right: 0;
+    }
+}
+
 .page-container,
 .container {
     position: relative;
@@ -440,6 +483,120 @@ body.dark-mode .profile-header {
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.1);
 }
 
+/* Change password card */
+.password-section {
+    margin-top: 1.5rem;
+}
+
+.password-section h3 {
+    margin: 0 0 0.35rem;
+    font-weight: 800;
+    font-size: 1.25rem;
+}
+
+.password-intro {
+    margin: 0 0 1.25rem;
+    color: #777;
+    font-size: 0.92rem;
+}
+
+.password-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 640px;
+}
+
+.password-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.password-field label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.password-field input {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 1rem;
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.password-field input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.18);
+}
+
+.password-msg {
+    min-height: 1.2em;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.password-msg.error {
+    color: #c62828;
+}
+
+.password-msg.success {
+    color: #2e7d32;
+}
+
+.password-btn {
+    align-self: flex-start;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(102, 126, 234, 0.35);
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+
+.password-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(102, 126, 234, 0.45);
+}
+
+.password-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+}
+
+body.dark-mode .password-intro,
+body.dark-mode .password-field label {
+    color: #b9b9c6;
+}
+
+body.dark-mode .password-field input {
+    background: #2a2f3c;
+    color: #f0f0f0;
+    border-color: #4a5163;
+}
+
+@media (max-width: 600px) {
+    .password-row {
+        grid-template-columns: 1fr;
+    }
+
+    .password-btn {
+        width: 100%;
+    }
+}
+
 /* Menu */
 .menu-page-header {
     margin-bottom: 1.5rem;
@@ -551,6 +708,11 @@ body.dark-mode .leaderboard-card:nth-child(3) {
 }
 
 /* Navbar */
+#app-nav .navbar {
+    position: static;
+    top: auto;
+}
+
 .navbar {
     backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -681,7 +843,7 @@ body.dark-mode .leaderboard-card:nth-child(3) {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.45);
-    z-index: 1050;
+    z-index: 1290;
     opacity: 0;
     transition: opacity 0.3s;
 }
@@ -790,8 +952,9 @@ body.nav-open {
         display: flex;
     }
 
-    /* Hide nav links from top bar — only in slide-out drawer */
-    .navbar > .nav-drawer {
+    /* Slide-out drawer — sibling of navbar, not inside backdrop-filter */
+    #app-nav .nav-drawer {
+        display: flex;
         position: fixed;
         top: 0;
         right: 0;
@@ -811,15 +974,27 @@ body.nav-open {
         visibility: hidden;
         pointer-events: none;
         transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.3s;
-        z-index: 1100;
+        z-index: 1300;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
 
-    .navbar > .nav-drawer.open {
+    #app-nav .nav-drawer.open {
         transform: translateX(0);
         visibility: visible;
         pointer-events: auto;
+    }
+
+    #app-nav .navbar {
+        position: relative;
+        z-index: 1301;
+        width: 100%;
+        flex-wrap: nowrap;
+    }
+
+    .nav-quick {
+        position: relative;
+        z-index: 1302;
     }
 
     .nav-links {

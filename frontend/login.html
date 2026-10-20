@@ -27,6 +27,10 @@
             color: #e8e8e8;
         }
 
+        body.dark-mode::before {
+            filter: brightness(0.55) saturate(0.85);
+        }
+
         body::before {
             content: '';
             position: absolute;
@@ -34,11 +38,11 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background-image: url('background.png.jpg');
+            background-image: var(--login-bg, url('images/login-bg.svg'));
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            opacity: 0.7;
+            opacity: 1;
             z-index: 0;
             animation: zoom 20s infinite alternate;
         }
@@ -155,6 +159,43 @@
             text-decoration: underline;
         }
 
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .help-text {
+            font-size: 0.85em;
+            color: #777;
+            margin-top: 6px;
+        }
+
+        body.dark-mode .help-text {
+            color: #a9a9a9;
+        }
+
+        .links-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+            font-size: 0.95em;
+        }
+
+        .links-row a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .links-row a:hover {
+            text-decoration: underline;
+        }
+
         .theme-toggle {
             position: fixed;
             top: 14px;
@@ -174,9 +215,10 @@
 <body>
     <button type="button" id="themeToggle" class="theme-toggle">🌙 Dark</button>
     <div class="container">
-        <h2>Login</h2>
+        <h2 id="formTitle">Login</h2>
         
         <div class="error" id="errorMessage"></div>
+        <div class="success" id="successMessage"></div>
 
         <form id="loginForm">
             <div class="form-group">
@@ -190,10 +232,45 @@
             </div>
 
             <button type="submit" class="btn">Login</button>
+
+            <div class="links-row">
+                <a href="#" id="showResetLink">Forgot password?</a>
+                <a href="signup.html">Create an account</a>
+            </div>
+        </form>
+
+        <form id="resetForm" style="display: none;">
+            <div class="form-group">
+                <label for="resetEmail">Email</label>
+                <input type="email" id="resetEmail" name="resetEmail" autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label for="resetPhone">Phone number used at sign up</label>
+                <input type="tel" id="resetPhone" name="resetPhone" placeholder="07XXXXXXXX" autocomplete="tel">
+                <div class="help-text">We check this against your account instead of sending an email.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="resetNewPassword">New password</label>
+                <input type="password" id="resetNewPassword" name="resetNewPassword" minlength="6" autocomplete="new-password">
+            </div>
+
+            <div class="form-group">
+                <label for="resetConfirmPassword">Confirm new password</label>
+                <input type="password" id="resetConfirmPassword" name="resetConfirmPassword" minlength="6" autocomplete="new-password">
+            </div>
+
+            <button type="submit" class="btn" id="resetSubmitBtn">Set new password</button>
+
+            <div class="links-row">
+                <a href="#" id="backToLoginLink">&larr; Back to login</a>
+                <a href="signup.html">Create an account</a>
+            </div>
         </form>
 
         <div class="signup-link">
-            Don't have an account? <a href="signup.html">Sign up here</a>
+            Already logged in? Change your password from the <a href="profile.html">Profile</a> page.
         </div>
     </div>
 
@@ -217,11 +294,93 @@
             });
         })();
 
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        const loginForm = document.getElementById('loginForm');
+        const resetForm = document.getElementById('resetForm');
+        const errorBox = document.getElementById('errorMessage');
+        const successBox = document.getElementById('successMessage');
+
+        function showMessage(box, text) {
+            errorBox.style.display = 'none';
+            successBox.style.display = 'none';
+            if (!box) return;
+            box.textContent = text;
+            box.style.display = 'block';
+        }
+
+        function showResetForm(show) {
+            showMessage(null);
+            loginForm.style.display = show ? 'none' : 'block';
+            resetForm.style.display = show ? 'block' : 'none';
+            document.getElementById('formTitle').textContent = show ? 'Reset password' : 'Login';
+            if (show) {
+                const typedEmail = document.getElementById('email').value;
+                if (typedEmail) document.getElementById('resetEmail').value = typedEmail;
+                document.getElementById('resetEmail').focus();
+            }
+        }
+
+        document.getElementById('showResetLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showResetForm(true);
+        });
+        document.getElementById('backToLoginLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showResetForm(false);
+        });
+
+        resetForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('resetEmail').value.trim();
+            const phone = document.getElementById('resetPhone').value.trim();
+            const newPassword = document.getElementById('resetNewPassword').value;
+            const confirm = document.getElementById('resetConfirmPassword').value;
+
+            if (!email || !phone || !newPassword) {
+                showMessage(errorBox, 'Please fill in email, phone, and the new password.');
+                return;
+            }
+            if (newPassword.length < 6) {
+                showMessage(errorBox, 'New password must be at least 6 characters.');
+                return;
+            }
+            if (newPassword !== confirm) {
+                showMessage(errorBox, 'The two passwords do not match.');
+                return;
+            }
+
+            const btn = document.getElementById('resetSubmitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Updating…';
+            try {
+                const response = await fetch(`${API_BASE}/api/reset-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, phone, newPassword }),
+                });
+                const data = await response.json().catch(() => ({}));
+                if (response.ok && data.success) {
+                    showResetForm(false);
+                    document.getElementById('email').value = email;
+                    document.getElementById('password').value = '';
+                    showMessage(successBox, data.message || 'Password updated. Log in with your new password.');
+                    resetForm.reset();
+                } else {
+                    showMessage(errorBox, data.message || 'Could not reset password. Please try again.');
+                }
+            } catch (err) {
+                console.error('❌ Reset password error:', err);
+                showMessage(errorBox, 'Network error. Make sure the server is running and try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Set new password';
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const errorDiv = document.getElementById('errorMessage');
-            errorDiv.style.display = 'none';
+            showMessage(null);
 
             const formData = {
                 email: document.getElementById('email').value,

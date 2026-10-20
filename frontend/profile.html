@@ -27,6 +27,29 @@
             </div>
             <div class="info-grid" id="userInfo"></div>
         </div>
+
+        <div class="profile-section password-section animate-in delay-1" id="passwordSection">
+            <h3>🔒 Change password</h3>
+            <p class="password-intro">Enter your current password, then choose a new one (at least 6 characters).</p>
+            <form id="changePasswordForm" class="password-form" autocomplete="off">
+                <div class="password-field">
+                    <label for="currentPassword">Current password</label>
+                    <input type="password" id="currentPassword" autocomplete="current-password" required>
+                </div>
+                <div class="password-row">
+                    <div class="password-field">
+                        <label for="newPassword">New password</label>
+                        <input type="password" id="newPassword" minlength="6" autocomplete="new-password" required>
+                    </div>
+                    <div class="password-field">
+                        <label for="confirmPassword">Confirm new password</label>
+                        <input type="password" id="confirmPassword" minlength="6" autocomplete="new-password" required>
+                    </div>
+                </div>
+                <div class="password-msg" id="passwordMsg" role="status"></div>
+                <button type="submit" class="password-btn" id="changePasswordBtn">Update password</button>
+            </form>
+        </div>
     </div>
 
     <div id="app-modals"></div>

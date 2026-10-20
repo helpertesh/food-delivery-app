@@ -1,0 +1,48 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: food-delivery-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: food_delivery_db
+    ports:
+      # Host port 3307 so it does not clash with XAMPP on 3306.
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-rootpass}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    container_name: food-delivery-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    # M-Pesa and other secrets come from backend/.env (optional).
+    # DB_* values below override anything in that file.
+    env_file:
+      - path: backend/.env
+        required: false
+    environment:
+      DATABASE_DIALECT: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      DB_NAME: food_delivery_db
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      # Persist uploaded images and the JSON fallback/demo files on your disk.
+      - ./backend/uploads:/app/backend/uploads
+      - ./backend/database:/app/backend/database
+
+volumes:
+  db_data:

@@ -869,7 +869,9 @@
                 setupCategoryButtons();
                 startMenuSync();
             },
-            profile: async () => {},
+            profile: async () => {
+                setupChangePasswordForm();
+            },
             leaderboard: async () => {
                 loadLeaderboard();
             },
@@ -1612,6 +1614,65 @@
         }
 
         // Logout function
+        function setupChangePasswordForm() {
+            const form = document.getElementById('changePasswordForm');
+            if (!form) return;
+            const msg = document.getElementById('passwordMsg');
+            const btn = document.getElementById('changePasswordBtn');
+            const setMsg = (text, type) => {
+                if (!msg) return;
+                msg.textContent = text || '';
+                msg.className = 'password-msg' + (type ? ' ' + type : '');
+            };
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                if (!currentPassword || !newPassword) {
+                    setMsg('Please fill in all the password fields.', 'error');
+                    return;
+                }
+                if (newPassword.length < 6) {
+                    setMsg('New password must be at least 6 characters.', 'error');
+                    return;
+                }
+                if (newPassword !== confirmPassword) {
+                    setMsg('The two new passwords do not match.', 'error');
+                    return;
+                }
+                if (newPassword === currentPassword) {
+                    setMsg('New password must be different from the current one.', 'error');
+                    return;
+                }
+
+                setMsg('');
+                if (btn) { btn.disabled = true; btn.textContent = 'Updating…'; }
+                try {
+                    const res = await fetch(`${API_BASE}/api/change-password`, {
+                        method: 'POST',
+                        headers: { ...apiFetchHeaders(true), 'user-id': String(userData.id) },
+                        body: JSON.stringify({ userId: userData.id, currentPassword, newPassword }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok && data.success) {
+                        form.reset();
+                        setMsg(data.message || 'Password updated successfully.', 'success');
+                        showToast('Password updated', 'success');
+                    } else {
+                        setMsg(data.message || 'Could not change password. Please try again.', 'error');
+                    }
+                } catch (err) {
+                    console.error('Change password error:', err);
+                    setMsg('Network error. Please try again.', 'error');
+                } finally {
+                    if (btn) { btn.disabled = false; btn.textContent = 'Update password'; }
+                }
+            });
+        }
+
         function logout() {
             sessionStorage.removeItem('user');
             localStorage.removeItem('cart');

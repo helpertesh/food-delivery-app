@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Food Delivery</title>
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/pages.css">
+</head>
+<body data-page="home">
+    <div class="page-bg" aria-hidden="true">
+        <span class="blob blob-1"></span>
+        <span class="blob blob-2"></span>
+        <span class="blob blob-3"></span>
+    </div>
+
+    <div id="app-nav"></div>
+
+    <div class="container page-container">
+        <section class="welcome-hero" id="welcomeCard">
+            <div class="welcome-hero-content">
+                <span class="welcome-badge">Fresh &amp; Fast Delivery</span>
+                <h1>Welcome back, <span id="userName">User</span>! 👋</h1>
+                <p class="hero-sub">Hungry? Browse our delicious menu and order your favorite food — delivered hot to your door.</p>
+                <p id="reviewStatsLine" class="review-stats-line"></p>
+                <div class="welcome-actions">
+                    <a href="menu.html" class="btn-primary">🍽️ Browse menu</a>
+                    <a href="track-order.html" class="btn-ghost">📍 Track order</a>
+                </div>
+            </div>
+            <div class="welcome-hero-visual">
+                <span class="float-emoji e1">🍕</span>
+                <span class="float-emoji e2">🍔</span>
+                <span class="float-emoji e3">🥗</span>
+                <span class="float-emoji e4">🍰</span>
+                <img src="deliver.png" alt="Food delivery" class="hero-delivery-img">
+            </div>
+        </section>
+
+        <nav class="quick-actions animate-in delay-1" aria-label="Quick links">
+            <a href="menu.html" class="quick-card">
+                <span class="qc-icon">🍽️</span>
+                <span>Menu</span>
+            </a>
+            <a href="track-order.html" class="quick-card">
+                <span class="qc-icon">📍</span>
+                <span>Track</span>
+            </a>
+            <a href="leaderboard.html" class="quick-card">
+                <span class="qc-icon">🏆</span>
+                <span>Leaderboard</span>
+            </a>
+            <a href="profile.html" class="quick-card">
+                <span class="qc-icon">👤</span>
+                <span>Profile</span>
+            </a>
+        </nav>
+
+        <div class="feature-strip animate-in delay-2" id="recoSection" style="display:none;">
+            <h3>✨ For you</h3>
+            <p class="section-desc">Based on your tastes and recent orders.</p>
+            <div class="reco-grid" id="recoGrid"></div>
+        </div>
+
+        <div class="feature-strip animate-in delay-3" id="ordersReviewSection">
+            <h3>⭐ Rate your orders</h3>
+            <p class="section-desc">Tap a row to rate. You can review orders from <strong>pending</strong> through <strong>delivered</strong> (not cancelled).</p>
+            <div id="pendingReviewsList"></div>
+        </div>
+    </div>
+
+    <div id="app-modals"></div>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -13,11 +13,18 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f4f7ff 0%, #eef2ff 100%);
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #121826 0%, #1c1c2b 100%);
+            color: #e8e8e8;
         }
 
         .container {
@@ -30,6 +37,12 @@
             z-index: 1;
         }
 
+        body.dark-mode .container {
+            background: #1f2432;
+            color: #e8e8e8;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+        }
+
         h1 {
             color: #333;
             margin-bottom: 20px;
@@ -40,6 +53,14 @@
             color: #666;
             margin-bottom: 30px;
             font-size: 1.1em;
+        }
+
+        body.dark-mode h1 {
+            color: #f2f2f2;
+        }
+
+        body.dark-mode p {
+            color: #c9c9c9;
         }
 
         .button-group {
@@ -73,33 +94,41 @@
             background: #764ba2;
             color: white;
         }
+
+        .theme-toggle {
+            position: fixed;
+            top: 14px;
+            right: 14px;
+            z-index: 3;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(25, 32, 54, 0.58);
+            color: white;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
         body::before {
             content: '';
             position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background-image: url('background.png.jpg');
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(16, 22, 44, 0.42), rgba(16, 22, 44, 0.42)),
+                url('deliver.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             z-index: -1;
-            opacity: 0.4;
-            animation: zoom 20s infinite alternate;
-        }
-
-        @keyframes zoom {
-            0% {
-                transform: scale(1);
-            }
-            100% {
-                transform: scale(1.15);
-            }
+            opacity: 1;
         }
     </style>
 </head>
 <body>
+    <button type="button" id="themeToggle" class="theme-toggle">🌙 Dark</button>
     <div class="container">
         <h1>🍔  Huawei Food Delivery App</h1>
         <p>Delicious food delivered to your doorstep</p>
@@ -108,5 +137,25 @@
             <a href="signup.html" class="btn btn-signup">Sign Up</a>
         </div>
     </div>
+    <script>
+        function applyTheme(theme) {
+            const dark = theme === 'dark';
+            document.body.classList.toggle('dark-mode', dark);
+            const btn = document.getElementById('themeToggle');
+            if (btn) btn.textContent = dark ? '☀ Light' : '🌙 Dark';
+        }
+
+        (function initTheme() {
+            const stored = localStorage.getItem('themeMode');
+            applyTheme(stored === 'dark' ? 'dark' : 'light');
+            const btn = document.getElementById('themeToggle');
+            if (!btn) return;
+            btn.addEventListener('click', () => {
+                const next = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+                localStorage.setItem('themeMode', next);
+                applyTheme(next);
+            });
+        })();
+    </script>
 </body>
 </html>

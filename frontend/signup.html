@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #eef3ff 0%, #f7fbff 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -24,29 +24,23 @@
             overflow-x: hidden;
         }
 
+        body.dark-mode {
+            background: linear-gradient(135deg, #151a22 0%, #241a35 100%);
+            color: #e8e8e8;
+        }
+
         body::before {
             content: '';
             position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background-image: url('background.png.jpg');
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(22, 30, 58, 0.40), rgba(22, 30, 58, 0.40)),
+                url('deliver.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            opacity: 0.7;
+            opacity: 1;
             z-index: 0;
-            animation: zoom 20s infinite alternate;
-        }
-
-        @keyframes zoom {
-            0% {
-                transform: scale(1);
-            }
-            100% {
-                transform: scale(1.1);
-            }
         }
 
         .container {
@@ -60,11 +54,21 @@
             z-index: 1;
         }
 
+        body.dark-mode .container {
+            background: #1f2432;
+            color: #e8e8e8;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
         h2 {
             color: #333;
             margin-bottom: 30px;
             text-align: center;
             font-size: 2em;
+        }
+
+        body.dark-mode h2 {
+            color: #f1f1f1;
         }
 
         .form-group {
@@ -78,6 +82,12 @@
             font-weight: 500;
         }
 
+        body.dark-mode label,
+        body.dark-mode .login-link,
+        body.dark-mode small {
+            color: #c9c9c9 !important;
+        }
+
         input, textarea {
             width: 100%;
             padding: 10px;
@@ -85,6 +95,13 @@
             border-radius: 5px;
             font-size: 1em;
             transition: border-color 0.3s;
+        }
+
+        body.dark-mode input,
+        body.dark-mode textarea {
+            background: #2a2f3c;
+            color: #f0f0f0;
+            border-color: #4a5163;
         }
 
         input:focus, textarea:focus {
@@ -144,9 +161,25 @@
         .login-link a:hover {
             text-decoration: underline;
         }
+
+        .theme-toggle {
+            position: fixed;
+            top: 14px;
+            right: 14px;
+            z-index: 2;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(25, 32, 54, 0.58);
+            color: white;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
+    <button type="button" id="themeToggle" class="theme-toggle">🌙 Dark</button>
     <div class="container">
         <h2>Create Account</h2>
         
@@ -191,6 +224,23 @@
 
     <script>
         const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000' : window.location.origin;
+        function applyTheme(theme) {
+            const dark = theme === 'dark';
+            document.body.classList.toggle('dark-mode', dark);
+            const btn = document.getElementById('themeToggle');
+            if (btn) btn.textContent = dark ? '☀ Light' : '🌙 Dark';
+        }
+        (function initTheme() {
+            const stored = localStorage.getItem('themeMode');
+            applyTheme(stored === 'dark' ? 'dark' : 'light');
+            const btn = document.getElementById('themeToggle');
+            if (!btn) return;
+            btn.addEventListener('click', () => {
+                const next = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+                localStorage.setItem('themeMode', next);
+                applyTheme(next);
+            });
+        })();
 
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();

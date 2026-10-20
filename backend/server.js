@@ -933,6 +933,60 @@ app.post('/api/reset-password', async (req, res) => {
     }
 });
 
+// Change password for a logged-in user — requires the current password to match.
+app.post('/api/change-password', async (req, res) => {
+    try {
+        const userId = req.headers['user-id'] || req.body.userId;
+        const { currentPassword, newPassword } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Please log in first.' });
+        }
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Current password and new password are required.',
+            });
+        }
+        if (String(newPassword).length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: 'New password must be at least 6 characters.',
+            });
+        }
+        if (String(newPassword) === String(currentPassword)) {
+            return res.status(400).json({
+                success: false,
+                message: 'New password must be different from the current password.',
+            });
+        }
+
+        const [users] = await db.query('SELECT id, password FROM users WHERE id = ?', [userId]);
+        if (users.length === 0) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
+        }
+
+        const user = users[0];
+        const valid = user.password ? await bcrypt.compare(String(currentPassword), user.password) : false;
+        if (!valid) {
+            return res.status(401).json({ success: false, message: 'Current password is incorrect.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(String(newPassword), 10);
+        await db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, user.id]);
+
+        console.log('✅ Password changed for user id:', user.id);
+        res.json({ success: true, message: 'Password updated successfully.' });
+    } catch (error) {
+        console.error('❌ change-password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while changing password.',
+            ...(process.env.NODE_ENV !== 'production' ? { detail: error.message } : {}),
+        });
+    }
+});
+
 // Get all users - ONE VERSION ONLY
 app.get('/api/users', async (req, res) => {
     try {
